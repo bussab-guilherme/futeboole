@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev:win": "concurrently \"vite\" \"cd ../backend && gradlew.bat bootRun\"",
-    "dev:linux": "concurrently \"vite\" \"cd ../backend && ./gradlew bootRun\"",
+    "dev:win": "concurrently \"vite\" \"cd ../backend && gradlew.bat run\"",
+    "dev:linux": "concurrently \"vite\" \"cd ../backend && ./gradlew run\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

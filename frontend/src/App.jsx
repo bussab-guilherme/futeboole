@@ -2,41 +2,60 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
+  const [nusp, setNusp] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-  const sendDataToBackend = async () => {
-    const jsonData = {
-      nusp: '14602251',
-      username: 'Pedro Bussab',
-      password: 'aaaaaa',
-    };
-
-    /*
-      O back ta configurado para receber os json para criacao de usuarios no '/api/users'
-      o conteudo usuario é NUSP, nome e senha.
-    */
+  const sendUserData = async () => {
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
+      const response = await fetch("/api/users", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(jsonData),
+        body: JSON.stringify({ nusp, name, password, score: 0 }),
       });
       if (response.ok) {
-        const result = await response.json();
-        console.log('Resposta do backend:', result);
+        const data = await response.text();
+        setMessage(data);
       } else {
-        console.error('Erro do backend:', response.status, response.statusText);
+        setMessage(`Error: ${response.status}`);
       }
     } catch (error) {
-      console.error('Erro ao enviar dados para o backend:', error);
+      setMessage("Error sending data");
     }
   };
 
   return (
     <div>
-      <h1>Teste de Conexão entre Frontend e Backend</h1>
-      <button onClick={sendDataToBackend}>Send Data</button>
+      <h1>Send User Data to Backend</h1>
+      <div>
+        <input
+          type="text"
+          placeholder="NUSP"
+          value={nusp}
+          onChange={(e) => setNusp(e.target.value)}
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      <div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <button onClick={sendUserData}>Send Data</button>
+      {message && <p>{message}</p>}
     </div>
   );
 }
