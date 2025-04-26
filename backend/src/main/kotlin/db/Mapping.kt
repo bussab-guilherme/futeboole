@@ -10,26 +10,32 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import com.bussab_guilherme.model.User
 
 object UserTable : IntIdTable("USERS") {
-    var nusp = varchar("nusp", 8).uniqueIndex();
-    var name = varchar("name", 50);
-    var password = varchar("password", 50);
-    var score = float("score").default(0.0f);
+    var username = varchar("username", 255).uniqueIndex()
+    var password = varchar("password", 60)
+    var playerScore = float("player_score").default(0.0f)
+    var teamScore = float("team_score").default(0.0f)
+    var numVotes = integer("num_votes").default(0)
+    val team = array<String>("team").default(emptyList())
 }
 
 class UserDAO(id : EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<UserDAO>(UserTable);
 
-    var name by UserTable.name
-    var nusp by UserTable.nusp
-    var password by UserTable.password  
-    var score by UserTable.score
+    var username by UserTable.username
+    var password by UserTable.password
+    var playerScore by UserTable.playerScore
+    var teamScore by UserTable.teamScore
+    var numVotes by UserTable.numVotes
+    var team by UserTable.team
 }
 
-suspend fun <T> suspendTransaction(block: Transaction.() -> T): T = newSuspendedTransaction(Dispatchers.IO, statement = block);
+suspend fun <T> suspendTransaction(block: Transaction.() -> T): T = newSuspendedTransaction(Dispatchers.IO, statement = block)
 
 fun daoToModel(dao : UserDAO) = User(
-    dao.nusp,
-    dao.name,
+    dao.username,
     dao.password,
-    dao.score
+    dao.playerScore,
+    dao.teamScore,
+    dao.numVotes,
+    dao.team
 )
