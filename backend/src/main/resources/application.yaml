@@ -4,6 +4,7 @@ ktor:
             - com.bussab_guilherme.ApplicationKt.module
     deployment:
         port: 8080
+        secureCookie: false
 postgres:
   url: "jdbc:postgresql://localhost/default"
   user: postgres
