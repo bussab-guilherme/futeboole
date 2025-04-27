@@ -1,5 +1,6 @@
 package com.bussab_guilherme
 
+import com.bussab_guilherme.db.UserTable
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -13,6 +14,10 @@ import io.ktor.server.routing.*
 import java.sql.Connection
 import java.sql.DriverManager
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.configureDatabases() {
     Database.connect(
@@ -20,4 +25,10 @@ fun Application.configureDatabases() {
         user = "postgres",
         password = "password"
     )
+
+    transaction {
+        addLogger(StdOutSqlLogger)
+
+        SchemaUtils.createMissingTablesAndColumns(UserTable)
+    }
 }
