@@ -12,10 +12,8 @@ import { useState } from 'react';
 function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
+  const [message, setMessage] = useState("");
   const sendLogin = async () => {
-    console.log("Username: ", username);
-    console.log("Password: ", password);
     try {
       const response = await fetch("/api/users/login", {
         method: "POST",
@@ -26,15 +24,11 @@ function LoginPage() {
       });
       if (response.ok) {
         window.location.href = "/mercado";
+      } else {
+          setMessage("Usuário ou senha incorretos");
       }
     } catch (error) {
-      if (error.response.status === 404) {
-        alert("Usuário não encontrado");
-      } else if (error.response.status === 401) {
-        alert("Usuário e senha não batem");
-      } else {
-        alert("Erro ao fazer login");
-      }
+      if (error) setMessage("Error sending data");
     }
   };
 
@@ -50,6 +44,7 @@ function LoginPage() {
         <label htmlFor="Password">Senha:  </label>  
         <input type="password" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
         <Button link="/home" onClick={sendLogin}>Confirmar</Button>
+        {message && <p style={{ color: 'red' }}>{message}</p>}
       </Block>
       <Footer />
     </Page>
