@@ -9,11 +9,9 @@ import { useState } from 'react';
 function RegisterPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
+    const [message, setMessage] = useState("");
 
     const sendUserData = async () => {
-      console.log("Username: ", username);
-      console.log("Password: ", password);
       try {
         const response = await fetch("/api/users/register", {
           method: "POST",
@@ -22,20 +20,15 @@ function RegisterPage() {
           },
           body: JSON.stringify({username, password, playerScore: 0, teamScore: 0, numVotes: 0, team: []}),
         });
-      if (response.ok) {
-        window.location.href = "/mercado";
-      }
-      }  
-      catch (error) {
-          if (error.response.status === 404) {
-            alert("Usuário não encontrado");
-          } else if (error.response.status === 401) {
-            alert("Usuário e senha não batem");
-          } else {
-            alert("Erro ao fazer login");
-          }
+        if (response.ok) {
+          window.location.href = "/login";
+        } else {
+            setMessage("Usuário já existe");
         }
-      };
+      } catch (error) {
+        if (error) setMessage("Error sending data");
+      }
+    };
   return (
     <Page>
       <Header title="Registre-se" />
@@ -45,7 +38,8 @@ function RegisterPage() {
         <input type="text" id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)}/>
         <label htmlFor="Password">Senha:  </label>  
         <input type="password" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-        <Button onClick={(e) => { e.preventDefault(); sendUserData(); }}>Confirmar</Button>
+        <Button onClick={sendUserData}>Confirmar</Button>
+        {message && <p style={{ color: 'red' }}>{message}</p>}
       </Block>
       <Footer />
     </Page>
