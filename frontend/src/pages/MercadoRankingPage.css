@@ -1,0 +1,30 @@
+.mercado-ranking-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.active-tab {
+  background-color: #0056b3 !important;
+  transform: scale(1.05);
+}
+
+.mercado-ranking-content {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.not-logged-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  margin-top: 40px;
+}

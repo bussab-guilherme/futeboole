@@ -1,20 +1,14 @@
-import React from "react";
-import './ListElement.css';
+import "./ListElement.css"
 
-const listElementStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '10px',
-    borderBottom: '1px solid #ccc',
-    font: '30px Arial, sans-serif',
-    color: 'white', 
-};
-
-function ListElement({ name, position, pontos }) {
-
-    return (
-        <div style={listElementStyle}>{position}: {name} - {pontos}</div>
-    );
+function ListElement({ name, position, pontos, acertos }) {
+  return (
+    <div className="list-element">
+      <span className="position">{position}</span>
+      <span className="name">{name}</span>
+      <span className="points">{pontos}</span>
+      <span className="hits">{acertos}</span>
+    </div>
+  )
 }
 
-export default ListElement;
+export default ListElement

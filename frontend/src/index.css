@@ -14,7 +14,7 @@
 }
 
 label {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 1.0em;
   font-weight: 10;
   color: #ffffff;
@@ -22,7 +22,7 @@ label {
 }
 
 input {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 1.0em;
   font-weight: 10;
   color: #ffffff;
@@ -31,7 +31,6 @@ input {
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
 }
-
 
 a {
   font-weight: 500;
@@ -47,19 +46,18 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background-color: #292929;
-  
 }
 
 p {
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 button {
@@ -68,7 +66,7 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;

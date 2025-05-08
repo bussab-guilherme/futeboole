@@ -1,0 +1,160 @@
+.soccer-field {
+  width: 100%;
+  height: 400px;
+  background-color: #38a169;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid white;
+}
+
+.field-markings {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.center-circle {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.7);
+  top: 50%;
+}
+
+.penalty-area-top,
+.penalty-area-bottom {
+  position: absolute;
+  width: 120px;
+  height: 60px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.penalty-area-top {
+  top: 0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.penalty-area-bottom {
+  bottom: 0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.goal-top,
+.goal-bottom {
+  position: absolute;
+  width: 60px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.goal-top {
+  top: 0;
+}
+
+.goal-bottom {
+  bottom: 0;
+}
+
+.player-positions {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px 20px;
+}
+
+.position {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.player-spot {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  font-weight: bold;
+}
+
+.player-spot:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.player-spot.selected {
+  box-shadow: 0 0 0 3px #38b6ff;
+}
+
+.player-spot.occupied {
+  background-color: #38b6ff;
+}
+
+.empty-spot {
+  font-size: 24px;
+  color: white;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+}
+
+.player-avatar {
+  width: 24px;
+  height: 24px;
+  background-color: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+.player-name {
+  max-width: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selection-info {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
