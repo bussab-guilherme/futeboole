@@ -22,7 +22,12 @@ function Mercado() {
   ]
 
   const handleUserSelect = (user) => {
-    setSelectedUser(user)
+    // Se clicar no mesmo usuário já selecionado, desseleciona
+    if (selectedUser && selectedUser.id === user.id) {
+      setSelectedUser(null)
+    } else {
+      setSelectedUser(user)
+    }
   }
 
   return (
@@ -32,7 +37,7 @@ function Mercado() {
         <div className="mercado-layout">
           <div className="user-list-container">
             <h2>Jogadores Disponíveis</h2>
-            <UserList users={users} onSelectUser={handleUserSelect} />
+            <UserList users={users} onSelectUser={handleUserSelect} selectedUser={selectedUser} />
           </div>
           <div className="field-container">
             <SoccerField selectedUser={selectedUser} />

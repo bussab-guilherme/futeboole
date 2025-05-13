@@ -3,11 +3,12 @@ import Page from "../containers/Page"
 import Button from "../containers/Button"
 import Mercado from "../components/Mercado"
 import Ranking from "../components/Ranking"
+import Votacao from "../components/Votacao"
 import { useState, useEffect } from "react"
 import "./MercadoRankingPage.css"
 
 function MercadoRankingPage() {
-  const [mostrar, setMostrar] = useState("mercado") // "mercado" ou "ranking"
+  const [mostrar, setMostrar] = useState("mercado") // "mercado", "ranking" ou "votacao"
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   // Verificar se o usuário está logado (em produção, verificaria com o backend)
@@ -37,11 +38,15 @@ function MercadoRankingPage() {
         <Button onClick={() => setMostrar("ranking")} className={mostrar === "ranking" ? "active-tab" : ""}>
           Ranking
         </Button>
+        <Button onClick={() => setMostrar("votacao")} className={mostrar === "votacao" ? "active-tab" : ""}>
+          Votação
+        </Button>
       </div>
 
       <div className="mercado-ranking-content">
         {mostrar === "mercado" && <Mercado />}
         {mostrar === "ranking" && <Ranking />}
+        {mostrar === "votacao" && <Votacao />}
       </div>
     </Page>
   )

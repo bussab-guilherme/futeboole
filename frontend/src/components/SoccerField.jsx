@@ -17,7 +17,15 @@ function SoccerField({ selectedUser }) {
   const handlePositionClick = (position) => {
     setSelectedPosition(position)
 
-    if (selectedUser) {
+    // Se clicar em uma posição que já tem jogador, remove o jogador
+    if (teamPlayers[position]) {
+      setTeamPlayers({
+        ...teamPlayers,
+        [position]: null,
+      })
+    }
+    // Se tiver um jogador selecionado, adiciona na posição
+    else if (selectedUser) {
       setTeamPlayers({
         ...teamPlayers,
         [position]: selectedUser,
@@ -65,12 +73,15 @@ function SoccerField({ selectedUser }) {
           {renderPlayer("midfielder1")}
           {renderPlayer("midfielder2")}
         </div>
-        <div className="position forwards">{renderPlayer("forward")}</div>
       </div>
 
-      {selectedUser && selectedPosition && (
+      {selectedPosition && (
         <div className="selection-info">
-          Adicionando {selectedUser.username} como {selectedPosition}
+          {teamPlayers[selectedPosition]
+            ? `${teamPlayers[selectedPosition].username} adicionado como ${selectedPosition}`
+            : selectedUser
+              ? `Clique em uma posição para adicionar ${selectedUser.username}`
+              : `Posição ${selectedPosition} está vazia`}
         </div>
       )}
     </div>

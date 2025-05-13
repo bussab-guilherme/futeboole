@@ -26,7 +26,8 @@
   padding: 10px;
   border-bottom: 1px solid #3a3a3a;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .user-list-item:hover {
@@ -35,6 +36,23 @@
 
 .user-list-item:last-child {
   border-bottom: none;
+}
+
+.user-list-item.selected {
+  background-color: rgba(56, 182, 255, 0.2);
+  border-left: 4px solid #38b6ff;
+}
+
+.user-list-item.selected::before {
+  content: "✓";
+  position: absolute;
+  right: 10px;
+  color: #38b6ff;
+  font-weight: bold;
+}
+
+.user-list-item.selected:hover {
+  background-color: rgba(56, 182, 255, 0.3);
 }
 
 .user-name {
