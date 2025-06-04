@@ -1,6 +1,8 @@
 package com.bussab_guilherme
 
 import com.bussab_guilherme.db.UserTable
+import com.bussab_guilherme.model.PostgresUserRepository
+import com.bussab_guilherme.model.User
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -11,6 +13,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.launch
 import java.sql.Connection
 import java.sql.DriverManager
 import org.jetbrains.exposed.sql.Database
@@ -19,7 +22,7 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun Application.configureDatabases() {
+fun Application.configureDatabases(recreate: Boolean = false) {
     Database.connect(
         "jdbc:postgresql://localhost:5432/main_db",
         user = "postgres",
@@ -29,6 +32,26 @@ fun Application.configureDatabases() {
     transaction {
         addLogger(StdOutSqlLogger)
 
+        if (recreate) {
+            SchemaUtils.drop(UserTable)
+        }
         SchemaUtils.createMissingTablesAndColumns(UserTable)
     }
+
+    val adminUsername = "admin"
+    val adminEmail = "bucho@bussab"
+    this.launch {
+        if (recreate || !PostgresUserRepository.checkUsername(adminUsername)) {
+            val adminUser = User(
+                username = adminUsername,
+                password = adminEmail,
+                playerScore = 0f,
+                teamScore = 0f,
+                numVotes = 0,
+                team = emptyList()
+            )
+            PostgresUserRepository.addUser(adminUser)
+        }
+    }
 }
+

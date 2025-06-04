@@ -3,6 +3,8 @@ package com.bussab_guilherme
 import com.bussab_guilherme.auth.Session
 import com.bussab_guilherme.db.UserDAO
 import com.bussab_guilherme.db.UserTable
+import com.bussab_guilherme.marketSystem.Market
+import com.bussab_guilherme.marketSystem.Round
 import com.bussab_guilherme.model.PostgresUserRepository
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -78,7 +80,7 @@ fun Application.configureSerialization() {
             authenticate("auth-session") {
                 get("/profile") {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
-                    call.respondText("Hello, ${principal.name}. This is your profile.")
+                    call.respond(HttpStatusCode.OK, "Hello, ${principal.name}. This is your profile.")
                 }
             }
             delete("/byUsername/{id}") {
@@ -87,6 +89,56 @@ fun Application.configureSerialization() {
                     call.respond(HttpStatusCode.NoContent)
                 } else {
                     call.respond(HttpStatusCode.NotFound)
+                }
+            }
+        }
+        route("api/market") {
+            get ("/userValue/{id}") {
+                val id = call.parameters["id"]
+                if (id != null) {
+                    val user = PostgresUserRepository.getUserByUsername(id)
+                    if (user != null) {
+                        if (Market.isOpen()) {
+                            call.respond(Market.getPlayerValue(user))
+                        } else {
+                            call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                } else {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid Username")
+                }
+            }
+            get ("/allUsersValue") {
+                if (!Market.isOpen()) {
+                    call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
+                }
+                val users = PostgresUserRepository.getAllUsers()
+                call.respond(Market.getPlayersValue(users))
+            }
+        }
+        authenticate("adm-session") {
+            route("/api/round") {
+                post("/create") {
+                    Round.create()
+                    call.respond(HttpStatusCode.OK)
+                }
+                post("/incrementVote") {
+                    if (Round.getCurrent().incrementTotalVoteCount())
+                        call.respond(HttpStatusCode.OK)
+                    else
+                        call.respond(HttpStatusCode.BadRequest, "Round is over")
+                }
+                post("/reset") {
+                    if (Round.getCurrent().resetTotalVoteCount())
+                        call.respond(HttpStatusCode.OK)
+                    else
+                        call.respond(HttpStatusCode.BadRequest, "Round is over")
+                }
+                post("/over") {
+                    Round.getCurrent().setRoundOver()
+                    call.respond(HttpStatusCode.OK)
                 }
             }
         }
