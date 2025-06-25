@@ -4,15 +4,13 @@ import com.bussab_guilherme.db.UserDAO
 import com.bussab_guilherme.db.suspendTransaction
 import com.bussab_guilherme.db.daoToModel
 import com.bussab_guilherme.db.UserTable
-import org.h2.util.SortedProperties
-import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 
 object PostgresUserRepository : UserRepository {
 
     override suspend fun getAllUsers(): List<User> = suspendTransaction {
-        UserDAO.all().orderBy(UserTable.teamScore to SortOrder.DESC).map(::daoToModel)
+        UserDAO.all().map(::daoToModel)
     }
 
     override suspend fun getUserByUsername(id: String): User? = suspendTransaction {
