@@ -31,7 +31,6 @@ fun Application.configureDatabases(recreate: Boolean = false) {
 
     transaction {
         addLogger(StdOutSqlLogger)
-
         if (recreate) {
             SchemaUtils.drop(UserTable)
         }

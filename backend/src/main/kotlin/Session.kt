@@ -2,6 +2,7 @@ package com.bussab_guilherme
 
 import com.bussab_guilherme.auth.Session
 import com.bussab_guilherme.model.PostgresUserRepository
+
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -10,12 +11,12 @@ import io.ktor.server.sessions.*
 
 fun Application.configureSessionAuthentication() {
     val secure = environment.config.propertyOrNull("ktor.deployment.secureCookie")?.getString()?.toBoolean() ?: false
-
     install(Sessions) {
         cookie<Session>("SESSION") {
             cookie.httpOnly = true
             cookie.extensions["SameSite"] = "lax"
             cookie.secure = secure
+
         }
     }
 
@@ -25,6 +26,7 @@ fun Application.configureSessionAuthentication() {
                 PostgresUserRepository.getUserByUsername(session.userId)?.let { UserIdPrincipal(it.username) }
             }
             challenge {
+
                 call.respond(HttpStatusCode.Unauthorized)
                 //call.respondRedirect("/login");
             }

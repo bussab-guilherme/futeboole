@@ -1,7 +1,7 @@
-import React from 'react';
-import './Button.css'; // importa o css
+"use client"
+import "./Button.css" // importa o css
 
-function Button({ children, onClick, style = {}, className = '' }) {
+function Button({ children, onClick, style = {}, className = "" }) {
   return (
     <button
       className={`button ${className}`} // aplica a classe
@@ -10,7 +10,7 @@ function Button({ children, onClick, style = {}, className = '' }) {
     >
       {children}
     </button>
-  );
+  )
 }
 
-export default Button;
+export default Button

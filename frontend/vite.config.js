@@ -9,4 +9,10 @@ export default defineConfig({
       '/api': 'http://127.0.0.1:8080',
     },
   },
+  test: {
+    environment: 'jsdom', // simula o navegador para testes
+    setupFiles: './src/setupTests.js', // configura o jest-dom
+    globals: true,
+  },
 })
+

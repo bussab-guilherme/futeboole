@@ -83,6 +83,7 @@ fun Application.configureSerialization() {
                     call.respond(HttpStatusCode.OK, "Hello, ${principal.name}. This is your profile.")
                 }
             }
+
             delete("/byUsername/{id}") {
                 val id = call.parameters["id"]
                 if (id != null && PostgresUserRepository.deleteUser(id)) {
