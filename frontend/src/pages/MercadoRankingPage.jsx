@@ -1,28 +1,55 @@
-import React from 'react';
-import Page from '../containers/Page';
-import Block from '../containers/Block';
-import Button from '../containers/Button';
-import Footer from '../containers/Footer';
-import Header from '../containers/PageHeader';
-import Mercado from '../components/Mercado';
-import Ranking from '../components/Ranking';
-import { useState } from 'react';
-
+"use client"
+import Page from "../containers/Page"
+import Button from "../containers/Button"
+import Mercado from "../components/Mercado"
+import Ranking from "../components/Ranking"
+import Votacao from "../components/Votacao"
+import { useState, useEffect } from "react"
+import "./MercadoRankingPage.css"
 
 function MercadoRankingPage() {
-  const [mostrar, setMostrar] = useState('mercado'); // "mercado" ou "ranking"
+  const [mostrar, setMostrar] = useState("mercado") // "mercado", "ranking" ou "votacao"
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Verificar se o usuário está logado (em produção, verificaria com o backend)
+  useEffect(() => {
+    // Simulação de verificação de login
+    // Em produção, verificaria com o backend ou localStorage
+    setIsLoggedIn(true)
+  }, [])
+
+  if (!isLoggedIn) {
+    return (
+      <Page>
+        <div className="not-logged-message">
+          <h2>Você precisa estar logado para acessar esta página</h2>
+          <Button onClick={() => (window.location.href = "/login")}>Fazer Login</Button>
+        </div>
+      </Page>
+    )
+  }
 
   return (
     <Page>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px', gap: '20px' }}>
-          <Button onClick={() => setMostrar('mercado')}>Mercado</Button>
-          <Button onClick={() => setMostrar('ranking')}>Ranking</Button>
-        </div>
+      <div className="mercado-ranking-tabs">
+        <Button onClick={() => setMostrar("mercado")} className={mostrar === "mercado" ? "active-tab" : ""}>
+          Mercado
+        </Button>
+        <Button onClick={() => setMostrar("ranking")} className={mostrar === "ranking" ? "active-tab" : ""}>
+          Ranking
+        </Button>
+        <Button onClick={() => setMostrar("votacao")} className={mostrar === "votacao" ? "active-tab" : ""}>
+          Votação
+        </Button>
+      </div>
 
-        {mostrar === 'mercado' && <Mercado />}
-        {mostrar === 'ranking' && <Ranking />}
+      <div className="mercado-ranking-content">
+        {mostrar === "mercado" && <Mercado />}
+        {mostrar === "ranking" && <Ranking />}
+        {mostrar === "votacao" && <Votacao />}
+      </div>
     </Page>
-  );
+  )
 }
 
-export default MercadoRankingPage;
+export default MercadoRankingPage

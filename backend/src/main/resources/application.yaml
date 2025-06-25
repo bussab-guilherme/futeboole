@@ -6,6 +6,6 @@ ktor:
         port: 8080
         secureCookie: false
 postgres:
-  url: "jdbc:postgresql://localhost/default"
+  url: "jdbc:postgresql://localhost:5432/main_db"
   user: postgres
   password: password
