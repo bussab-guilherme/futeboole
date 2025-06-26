@@ -11,12 +11,22 @@ function MercadoRankingPage() {
   const [mostrar, setMostrar] = useState("mercado") // "mercado", "ranking" ou "votacao"
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  // Verificar se o usuário está logado (em produção, verificaria com o backend)
   useEffect(() => {
-    // Simulação de verificação de login
-    // Em produção, verificaria com o backend ou localStorage
-    setIsLoggedIn(true)
+  fetch("/api/users/profile", {
+    method: "GET",
+    credentials: "include"
+  }).then((res) => {
+    if (!res.ok) {
+      window.location.href = "/login"
+    } else {
+      setIsLoggedIn(true)
+    }
+  })
   }, [])
+
+
+
+
 
   if (!isLoggedIn) {
     return (
