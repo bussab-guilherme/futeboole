@@ -5,7 +5,10 @@ import com.bussab_guilherme.db.UserDAO
 import com.bussab_guilherme.db.UserTable
 import com.bussab_guilherme.marketSystem.Market
 import com.bussab_guilherme.marketSystem.Round
+import com.bussab_guilherme.model.PostgresPlayerRepository
+import com.bussab_guilherme.model.PostgresTeamRepository
 import com.bussab_guilherme.model.PostgresUserRepository
+import com.bussab_guilherme.model.Team
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -50,8 +53,6 @@ fun Application.configureSerialization() {
                 try {
                     val payload = call.receive<User>()
                     if (PostgresUserRepository.checkUsername(payload.username)) {
-                        val hash = payload.hashPassword()
-                        payload.password = hash
                         PostgresUserRepository.addUser(payload)
                         call.respond(HttpStatusCode.Created, payload)
                     } else {
@@ -82,10 +83,51 @@ fun Application.configureSerialization() {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
                     call.respond(HttpStatusCode.OK, "Hello, ${principal.name}. This is your profile.")
                 }
+                put("registerPlayer") {
+                    val principal = call.authentication.principal<UserIdPrincipal>()!!
+                    PostgresUserRepository.registerPlayer(principal.name)
+                }
+                put("deletePlayer") {
+                    val principal = call.authentication.principal<UserIdPrincipal>()!!
+                    PostgresUserRepository.deleteUser(principal.name)
+                }
+                put("addToTeam/{playerName}") {
+                    val playerName = call.parameters["playerName"]
+                    if (!playerName.isNullOrEmpty()) {
+                        val principal = call.authentication.principal<UserIdPrincipal>()!!
+                        val user = PostgresUserRepository.getUserByUsername(principal.name)!!
+                        if (user.team != null) {
+                            PostgresTeamRepository.addPlayerToTeam(playerName, user.team!!.teamName)
+                            call.respond(HttpStatusCode.OK, "Player $playerName added to team ${user.team!!.teamName}")
+                        }
+                        else {
+                            call.respond(HttpStatusCode.BadRequest, "User has no team")
+                        }
+                    }
+                    else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid Player Name")
+                    }
+                }
+                put("deleteFromTeam/{playerName}") {
+                    val playerName = call.parameters["playerName"]
+                    if (!playerName.isNullOrEmpty()) {
+                        val principal = call.authentication.principal<UserIdPrincipal>()!!
+                        val user = PostgresUserRepository.getUserByUsername(principal.name)!!
+                        if (user.team != null) {
+                            PostgresTeamRepository.deletePlayerFromTeam(playerName, user.team!!.teamName)
+                        }
+                        else {
+                            call.respond(HttpStatusCode.BadRequest, "User has no team")
+                        }
+                    }
+                    else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid Player Name")
+                    }
+                }
             }
 
-            delete("/byUsername/{id}") {
-                val id = call.parameters["id"]
+            delete("/byUsername/{username}") {
+                val id = call.parameters["username"]
                 if (id != null && PostgresUserRepository.deleteUser(id)) {
                     call.respond(HttpStatusCode.NoContent)
                 } else {
@@ -94,13 +136,13 @@ fun Application.configureSerialization() {
             }
         }
         route("api/market") {
-            get ("/userValue/{id}") {
-                val id = call.parameters["id"]
+            get ("/playerValue/{username}") {
+                val id = call.parameters["username"]
                 if (id != null) {
-                    val user = PostgresUserRepository.getUserByUsername(id)
-                    if (user != null) {
+                    val player = PostgresPlayerRepository.getPlayerByName(id)
+                    if (player != null) {
                         if (Market.isOpen()) {
-                            call.respond(Market.getPlayerValue(user))
+                            call.respond(Market.getPlayerValue(player))
                         } else {
                             call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
                         }
@@ -111,12 +153,21 @@ fun Application.configureSerialization() {
                     call.respond(HttpStatusCode.BadRequest, "Invalid Username")
                 }
             }
-            get ("/allUsersValue") {
+            get ("/allPlayersValue") {
                 if (!Market.isOpen()) {
                     call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
                 }
-                val users = PostgresUserRepository.getAllUsers()
-                call.respond(Market.getPlayersValue(users))
+                val players = PostgresPlayerRepository.getAllPlayers()
+                call.respond(Market.getPlayersValue(players))
+            }
+            get ("/teamValue/{teamName}") {
+                val teamName = call.parameters["teamName"]
+                if (!teamName.isNullOrEmpty()) {
+                    val team = PostgresTeamRepository.getTeamByName(teamName)
+                    if (team != null) {
+                        call.respond(team.getTeamScore())
+                    }
+                }
             }
         }
         authenticate("adm-session") {

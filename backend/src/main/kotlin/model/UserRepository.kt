@@ -6,4 +6,6 @@ interface UserRepository {
     suspend fun addUser(user: User)
     suspend fun checkUsername(id: String): Boolean
     suspend fun deleteUser(id: String): Boolean
+    suspend fun registerPlayer(username : String) : Unit
+    suspend fun deletePlayer(username : String) : Unit
 }

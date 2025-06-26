@@ -1,7 +1,13 @@
 package com.bussab_guilherme
 
+import com.bussab_guilherme.db.PlayerDAO
+import com.bussab_guilherme.db.PlayerTable
+import com.bussab_guilherme.db.TeamPlayersTable
+import com.bussab_guilherme.db.TeamTable
 import com.bussab_guilherme.db.UserTable
+import com.bussab_guilherme.model.Player
 import com.bussab_guilherme.model.PostgresUserRepository
+import com.bussab_guilherme.model.Team
 import com.bussab_guilherme.model.User
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -33,8 +39,14 @@ fun Application.configureDatabases(recreate: Boolean = false) {
         addLogger(StdOutSqlLogger)
         if (recreate) {
             SchemaUtils.drop(UserTable)
+            SchemaUtils.drop(TeamPlayersTable)
+            SchemaUtils.drop(PlayerTable)
+            SchemaUtils.drop(TeamTable)
         }
         SchemaUtils.createMissingTablesAndColumns(UserTable)
+        SchemaUtils.createMissingTablesAndColumns(PlayerTable)
+        SchemaUtils.createMissingTablesAndColumns(TeamTable)
+        SchemaUtils.createMissingTablesAndColumns(TeamPlayersTable)
     }
 
     val adminUsername = "admin"
@@ -44,10 +56,8 @@ fun Application.configureDatabases(recreate: Boolean = false) {
             val adminUser = User(
                 username = adminUsername,
                 password = adminEmail,
-                playerScore = 0f,
-                teamScore = 0f,
-                numVotes = 0,
-                team = emptyList()
+                player = Player(adminUsername, 0.0f, 0),
+                team = Team("adminTeam", emptyList())
             )
             PostgresUserRepository.addUser(adminUser)
         }
