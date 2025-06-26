@@ -16,11 +16,11 @@ import org.jetbrains.exposed.sql.deleteWhere
 object PostgresUserRepository : UserRepository {
 
     override suspend fun getAllUsers(): List<User> = suspendTransaction {
-        UserDAO.all().map(::daoToModel)
+        UserDAO.all().orderBy(UserTable.globalScore to SortOrder.DESC).map(::daoToModel)
     }
 
     override suspend fun getUserByUsername(id: String): User? = suspendTransaction {
-        UserDAO.find {(UserTable.username eq id)}.limit(1).map(::daoToModel).firstOrNull();
+        UserDAO.find { (UserTable.username eq id) }.limit(1).map(::daoToModel).firstOrNull();
     }
 
     override suspend fun addUser(user: User): Unit = suspendTransaction {
@@ -33,7 +33,7 @@ object PostgresUserRepository : UserRepository {
     }
 
     override suspend fun checkUsername(id: String): Boolean {
-        return suspendTransaction { UserDAO.find {(UserTable.username eq id)}.empty() }
+        return suspendTransaction { UserDAO.find { (UserTable.username eq id) }.empty() }
     }
 
     override suspend fun deleteUser(id: String): Boolean = suspendTransaction {
@@ -41,13 +41,34 @@ object PostgresUserRepository : UserRepository {
         rowsDeleted == 1
     }
 
-    override suspend fun registerPlayer(username : String) = suspendTransaction {
+    override suspend fun registerPlayer(username: String) = suspendTransaction {
         val userDao = UserDAO.find { UserTable.username eq username }.first()
         userDao.player = PlayerDAO.new { playerName = username }
     }
 
-    override suspend fun deletePlayer(username: String)  = suspendTransaction {
+    override suspend fun deletePlayer(username: String) = suspendTransaction {
         val userDao = UserDAO.find { UserTable.username eq username }.first()
         userDao.player.delete()
+    }
+
+    override suspend fun updateUsersGlobalScore(): Unit = suspendTransaction {
+        UserDAO.all().forEach { user ->
+            val teamScore = daoToModel(user).team?.getTeamScore() ?: 0.0
+            user.globalScore += teamScore.toFloat()
+        }
+    }
+
+    override suspend fun updateUserMoney(username: String, amount: Float): Unit = suspendTransaction {
+        UserDAO.find { UserTable.username eq username }.first().money += amount
+    }
+
+    override suspend fun updateUserPlayersVoted(username: String, playerName: String) : Unit = suspendTransaction {
+        UserDAO.find { UserTable.username eq username }.first().playersVoted = UserDAO.find { UserTable.username eq username }.first().playersVoted.plus(playerName)
+    }
+
+    override suspend fun resetUsersPlayersVoted() : Unit = suspendTransaction {
+        UserDAO.all().forEach { user ->
+            user.playersVoted = emptyList()
+        }
     }
 }

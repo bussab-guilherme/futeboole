@@ -56,8 +56,11 @@ fun Application.configureDatabases(recreate: Boolean = false) {
             val adminUser = User(
                 username = adminUsername,
                 password = adminEmail,
-                player = Player(adminUsername, 0.0f, 0),
-                team = Team("adminTeam", emptyList())
+                globalScore = 0.0f,
+                money = 15.0f,
+                player = Player(adminUsername, 0.0f, 0, 0.0f),
+                team = Team("adminTeam", emptyList()),
+                playersVoted = emptyList()
             )
             PostgresUserRepository.addUser(adminUser)
         }

@@ -8,7 +8,6 @@ import com.bussab_guilherme.marketSystem.Round
 import com.bussab_guilherme.model.PostgresPlayerRepository
 import com.bussab_guilherme.model.PostgresTeamRepository
 import com.bussab_guilherme.model.PostgresUserRepository
-import com.bussab_guilherme.model.Team
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -83,21 +82,23 @@ fun Application.configureSerialization() {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
                     call.respond(HttpStatusCode.OK, "Hello, ${principal.name}. This is your profile.")
                 }
-                put("registerPlayer") {
+                put("/registerPlayer") {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
                     PostgresUserRepository.registerPlayer(principal.name)
                 }
-                put("deletePlayer") {
+                put("/deletePlayer") {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
                     PostgresUserRepository.deleteUser(principal.name)
                 }
-                put("addToTeam/{playerName}") {
+                put("/addToTeam/{playerName}") {
                     val playerName = call.parameters["playerName"]
                     if (!playerName.isNullOrEmpty()) {
                         val principal = call.authentication.principal<UserIdPrincipal>()!!
                         val user = PostgresUserRepository.getUserByUsername(principal.name)!!
-                        if (user.team != null) {
+                        val player = PostgresPlayerRepository.getPlayerByName(playerName)
+                        if (user.team != null && player != null && user.money >= player.playerPrice) {
                             PostgresTeamRepository.addPlayerToTeam(playerName, user.team!!.teamName)
+                            PostgresUserRepository.updateUserMoney(principal.name, -player.playerPrice)
                             call.respond(HttpStatusCode.OK, "Player $playerName added to team ${user.team!!.teamName}")
                         }
                         else {
@@ -113,8 +114,11 @@ fun Application.configureSerialization() {
                     if (!playerName.isNullOrEmpty()) {
                         val principal = call.authentication.principal<UserIdPrincipal>()!!
                         val user = PostgresUserRepository.getUserByUsername(principal.name)!!
-                        if (user.team != null) {
+                        val player = PostgresPlayerRepository.getPlayerByName(playerName)
+                        if (user.team != null && player != null) {
                             PostgresTeamRepository.deletePlayerFromTeam(playerName, user.team!!.teamName)
+                            PostgresUserRepository.updateUserMoney(principal.name, player.playerPrice)
+                            call.respond(HttpStatusCode.OK, "Player $playerName deleted from team ${user.team!!.teamName}")
                         }
                         else {
                             call.respond(HttpStatusCode.BadRequest, "User has no team")
@@ -122,6 +126,19 @@ fun Application.configureSerialization() {
                     }
                     else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid Player Name")
+                    }
+                }
+                put("/giveScoreToPlayer/{playerName}/{score}") {
+                    val playerName = call.parameters["playerName"]
+                    val score = call.parameters["score"]
+                    val principal = call.authentication.principal<UserIdPrincipal>()!!
+                    val user = PostgresUserRepository.getUserByUsername(principal.name)!!
+                    if (user.playersVoted.contains(playerName)) {
+                        call.respond(HttpStatusCode.BadRequest, "Already voted in this Player")
+                    }
+                    if (playerName != null && score != null) {
+                        PostgresPlayerRepository.updatePlayerScore(playerName, score.toFloat())
+                        PostgresUserRepository.updateUserPlayersVoted(principal.name, playerName)
                     }
                 }
             }
@@ -136,13 +153,13 @@ fun Application.configureSerialization() {
             }
         }
         route("api/market") {
-            get ("/playerValue/{username}") {
+            get ("/playerPrice/{username}") {
                 val id = call.parameters["username"]
                 if (id != null) {
                     val player = PostgresPlayerRepository.getPlayerByName(id)
                     if (player != null) {
                         if (Market.isOpen()) {
-                            call.respond(Market.getPlayerValue(player))
+                            call.respond(Market.getPlayerPrice(player))
                         } else {
                             call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
                         }
@@ -153,14 +170,14 @@ fun Application.configureSerialization() {
                     call.respond(HttpStatusCode.BadRequest, "Invalid Username")
                 }
             }
-            get ("/allPlayersValue") {
+            get ("/allPlayersPrice") {
                 if (!Market.isOpen()) {
                     call.respond(HttpStatusCode.BadRequest, "Market Not Open at the Moment")
                 }
                 val players = PostgresPlayerRepository.getAllPlayers()
                 call.respond(Market.getPlayersValue(players))
             }
-            get ("/teamValue/{teamName}") {
+            get ("/teamScore/{teamName}") {
                 val teamName = call.parameters["teamName"]
                 if (!teamName.isNullOrEmpty()) {
                     val team = PostgresTeamRepository.getTeamByName(teamName)
@@ -174,21 +191,13 @@ fun Application.configureSerialization() {
             route("/api/round") {
                 post("/create") {
                     Round.create()
+                    PostgresPlayerRepository.resetPlayersScore()
+                    PostgresUserRepository.resetUsersPlayersVoted()
                     call.respond(HttpStatusCode.OK)
                 }
-                post("/incrementVote") {
-                    if (Round.getCurrent().incrementTotalVoteCount())
-                        call.respond(HttpStatusCode.OK)
-                    else
-                        call.respond(HttpStatusCode.BadRequest, "Round is over")
-                }
-                post("/reset") {
-                    if (Round.getCurrent().resetTotalVoteCount())
-                        call.respond(HttpStatusCode.OK)
-                    else
-                        call.respond(HttpStatusCode.BadRequest, "Round is over")
-                }
                 post("/over") {
+                    PostgresPlayerRepository.updatePlayersPrice()
+                    PostgresUserRepository.updateUsersGlobalScore()
                     Round.getCurrent().setRoundOver()
                     call.respond(HttpStatusCode.OK)
                 }
