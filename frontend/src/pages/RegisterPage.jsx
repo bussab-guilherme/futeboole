@@ -38,7 +38,7 @@ function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password, playerScore: 0, teamScore: 0, numVotes: 0, team: [] }),
+        body: JSON.stringify({ username, password, player: null, team: null }),
       })
       if (response.ok) {
         window.location.href = "/login"

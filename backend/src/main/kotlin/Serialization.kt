@@ -81,7 +81,7 @@ fun Application.configureSerialization() {
             authenticate("auth-session") {
                 get("/profile") {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
-                    call.respond(HttpStatusCode.OK, "Hello, ${principal.name}. This is your profile.")
+                    call.respond(HttpStatusCode.OK, principal.name)
                 }
                 put("registerPlayer") {
                     val principal = call.authentication.principal<UserIdPrincipal>()!!

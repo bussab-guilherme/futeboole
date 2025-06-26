@@ -40,12 +40,12 @@ function UserProfile({ user, onClose }) {
           <div className="user-stats">
             <div className="stat-item">
               <span className="stat-label">Pontuação Pessoal:</span>
-              <span className="stat-value">{user.playerScore.toFixed(1)}</span>
+              <span className="stat-value">{user.player.playerScore.toFixed(1)}</span>
             </div>
 
             <div className="stat-item">
-              <span className="stat-label">Pontuação do Time:</span>
-              <span className="stat-value">{user.teamScore.toFixed(1)}</span>
+              <span className="stat-label">Nome do Time:</span>
+              <span className="stat-value">{user.team.teamName.toFixed(1)}</span>
             </div>
 
             <div className="stat-item">
