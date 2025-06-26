@@ -4,12 +4,32 @@ import Block from "../containers/Block"
 import Button from "../containers/Button"
 import Footer from "../containers/Footer"
 import Header from "../containers/PageHeader"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 function RegisterPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    // Verifica se já tem sessão ativa
+    fetch("/api/users/profile", {
+      method: "GET",
+      credentials: "include"
+    })
+      .then(res => res.ok ? res.text() : null)
+      .then(username => {
+        if (username) {
+          window.location.href = "/mercado"  // redireciona se já logado
+        }
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return null
+  }
 
   const sendUserData = async () => {
     try {

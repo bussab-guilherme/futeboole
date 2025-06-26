@@ -3,6 +3,25 @@
 import "./UserProfile.css"
 
 function UserProfile({ user, onClose }) {
+  const handleLogout = async () => {
+  try {
+    const response = await fetch("/api/users/logout", {
+      method: "POST",
+      credentials: "include"
+    })
+
+    if (response.ok) {
+      
+      window.location.href = "/login"
+    } else {
+      console.error("Erro ao sair")
+    }
+  } catch (error) {
+    console.error("Erro na requisição de logout:", error)
+  }
+  }
+  
+  
   return (
     <div className="user-profile-popup">
       <div className="user-profile-header">
@@ -51,7 +70,7 @@ function UserProfile({ user, onClose }) {
       </div>
 
       <div className="user-profile-footer">
-        <button className="logout-button">Sair</button>
+        <button className="logout-button" onClick={handleLogout}>Sair</button>
       </div>
     </div>
   )
