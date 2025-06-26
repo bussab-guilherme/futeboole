@@ -20,6 +20,7 @@ function LoginPage() {
     })
       .then(res => res.ok ? res.text() : null)
       .then(username => {
+        console.log("Username from session:", username)
         if (username) {
           window.location.href = "/mercado"  // redireciona se já logado
         }
@@ -39,7 +40,7 @@ function LoginPage() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ username, password, playerScore: 0, teamScore: 0, numVotes: 0, team: [] }),
+        body: JSON.stringify({ username, password, player: null, team: null }),
       })
       if (response.ok) {
         window.location.href = "/mercado"

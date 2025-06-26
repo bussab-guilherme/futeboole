@@ -9,12 +9,8 @@ data class User(var username : String, var password : String, var player : Playe
 
     companion object {
         fun verifyPassword(plain: String, hash: String): Boolean {
-            val safeHash = when {
-                hash.startsWith("$2y$") -> "$2a$" + hash.substring(4)
-                hash.startsWith("$2b$") -> "$2a$" + hash.substring(4)
-                else                       -> hash
-            }
-            return BCrypt.checkpw(plain, safeHash)
+
+            return BCrypt.checkpw(plain, hash)
         }
     }
 }
