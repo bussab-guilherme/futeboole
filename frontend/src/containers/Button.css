@@ -1,20 +1,22 @@
 .button {
-  background-color: #007bff;
+  background-color: #38b6ff;
   padding: 12px 25px;
   margin: 10px;
   font-size: 1rem;
-  border-radius: 5px;
+  border-radius: 8px; /* Bordas mais arredondadas */
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
   border: none;
   color: rgb(0, 0, 0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra sutil */
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #007bff;
+  transform: translateY(-2px);
 }
 
 .button:active {
-  background-color: #004080;
-  transform: scale(0.96);
+  background-color: #0056b3;
+  transform: scale(0.98);
 }

@@ -10,6 +10,8 @@ data class User(var username : String, var password : String, var globalScore : 
     companion object {
         fun verifyPassword(plain: String, hash: String): Boolean {
             return BCrypt.checkpw(plain, hash)
+
+            return BCrypt.checkpw(plain, hash)
         }
     }
 }

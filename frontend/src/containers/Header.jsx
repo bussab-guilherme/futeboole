@@ -20,6 +20,7 @@ function Header() {
       return res.text() // retorna o username como string
     })
     .then(name => {
+      console.log("Nome retornado por /profile:", name)
       if (!name) {
         setUser(null)
         return

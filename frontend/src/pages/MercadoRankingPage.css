@@ -5,10 +5,21 @@
   margin-bottom: 20px;
   width: 100%;
   max-width: 600px;
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.mercado-ranking-tabs .button {
+  flex: 1;
+  background-color: transparent;
+  color: #e4e4e4;
+  border: 1px solid #38b6ff;
 }
 
 .active-tab {
-  background-color: #0056b3 !important;
+  background-color: #38b6ff !important;
+  color: #000 !important;
   transform: scale(1.05);
 }
 

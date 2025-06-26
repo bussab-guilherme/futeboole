@@ -9,6 +9,7 @@
   z-index: 1000;
   overflow: hidden;
   animation: slideIn 0.2s ease-out;
+  border: 1px solid #38b6ff;
 }
 
 @keyframes slideIn {
@@ -49,6 +50,7 @@
 .user-profile-content {
   padding: 15px;
   display: flex;
+  flex-direction: column; /* Alterado para coluna */
   gap: 15px;
 }
 
@@ -127,8 +129,10 @@
   padding: 5px 10px;
   font-size: 14px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .logout-button:hover {
   background-color: #c62828;
 }
+
