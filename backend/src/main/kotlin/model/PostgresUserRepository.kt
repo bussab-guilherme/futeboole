@@ -61,14 +61,4 @@ object PostgresUserRepository : UserRepository {
     override suspend fun updateUserMoney(username: String, amount: Float): Unit = suspendTransaction {
         UserDAO.find { UserTable.username eq username }.first().money += amount
     }
-
-    override suspend fun updateUserPlayersVoted(username: String, playerName: String) : Unit = suspendTransaction {
-        UserDAO.find { UserTable.username eq username }.first().playersVoted = UserDAO.find { UserTable.username eq username }.first().playersVoted.plus(playerName)
-    }
-
-    override suspend fun resetUsersPlayersVoted() : Unit = suspendTransaction {
-        UserDAO.all().forEach { user ->
-            user.playersVoted = emptyList()
-        }
-    }
 }

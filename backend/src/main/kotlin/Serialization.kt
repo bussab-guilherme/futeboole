@@ -5,9 +5,11 @@ import com.bussab_guilherme.db.UserDAO
 import com.bussab_guilherme.db.UserTable
 import com.bussab_guilherme.marketSystem.Market
 import com.bussab_guilherme.marketSystem.Round
+import com.bussab_guilherme.model.PlayerRepository
 import com.bussab_guilherme.model.PostgresPlayerRepository
 import com.bussab_guilherme.model.PostgresTeamRepository
 import com.bussab_guilherme.model.PostgresUserRepository
+import com.bussab_guilherme.model.PostgresVoteRepository
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -16,6 +18,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import com.bussab_guilherme.model.User
+import com.bussab_guilherme.model.Vote
+import com.bussab_guilherme.model.VoteRepository
 import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
@@ -133,13 +137,24 @@ fun Application.configureSerialization() {
                     val score = call.parameters["score"]
                     val principal = call.authentication.principal<UserIdPrincipal>()!!
                     val user = PostgresUserRepository.getUserByUsername(principal.name)!!
-                    if (user.playersVoted.contains(playerName)) {
-                        call.respond(HttpStatusCode.BadRequest, "Already voted in this Player")
+                    if (!playerName.isNullOrEmpty() && !score.isNullOrEmpty()) {
+                        val vote = Vote(user.username, playerName, score.toFloat())
+                        if (!PostgresVoteRepository.containsVote(vote)) {
+                            PostgresVoteRepository.addVote(vote)
+                            PostgresPlayerRepository.updatePlayerScore(playerName, score.toFloat())
+                            call.respond(HttpStatusCode.OK)
+                        }
+                        else {
+                            call.respond(HttpStatusCode.BadRequest, "Vote already exists")
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid Player Name or Score")
                     }
-                    if (playerName != null && score != null) {
-                        PostgresPlayerRepository.updatePlayerScore(playerName, score.toFloat())
-                        PostgresUserRepository.updateUserPlayersVoted(principal.name, playerName)
-                    }
+                }
+                get("/votes") {
+                    val principal = call.authentication.principal<UserIdPrincipal>()!!
+                    val votes = PostgresVoteRepository.getVotesByUser(principal.name)
+                    call.respond(votes)
                 }
             }
 
@@ -192,7 +207,7 @@ fun Application.configureSerialization() {
                 post("/create") {
                     Round.create()
                     PostgresPlayerRepository.resetPlayersScore()
-                    PostgresUserRepository.resetUsersPlayersVoted()
+                    PostgresVoteRepository.resetVotes()
                     call.respond(HttpStatusCode.OK)
                 }
                 post("/over") {

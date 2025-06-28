@@ -3,7 +3,7 @@ import kotlinx.serialization.Serializable
 import org.mindrot.jbcrypt.BCrypt
 
 @Serializable
-data class User(var username : String, var password : String, var globalScore : Float, var money : Float, var player : Player?, var team: Team?, var playersVoted : List<String> ) {
+data class User(var username : String, var password : String, var globalScore : Float, var money : Float, var player : Player?, var team: Team?) {
 
     fun hashPassword() : String = BCrypt.hashpw(password, BCrypt.gensalt())
 
