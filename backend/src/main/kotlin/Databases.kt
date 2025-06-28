@@ -5,6 +5,7 @@ import com.bussab_guilherme.db.PlayerTable
 import com.bussab_guilherme.db.TeamPlayersTable
 import com.bussab_guilherme.db.TeamTable
 import com.bussab_guilherme.db.UserTable
+import com.bussab_guilherme.db.VoteTable
 import com.bussab_guilherme.model.Player
 import com.bussab_guilherme.model.PostgresUserRepository
 import com.bussab_guilherme.model.Team
@@ -42,11 +43,13 @@ fun Application.configureDatabases(recreate: Boolean = false) {
             SchemaUtils.drop(TeamPlayersTable)
             SchemaUtils.drop(PlayerTable)
             SchemaUtils.drop(TeamTable)
+            SchemaUtils.drop(VoteTable)
         }
         SchemaUtils.createMissingTablesAndColumns(UserTable)
         SchemaUtils.createMissingTablesAndColumns(PlayerTable)
         SchemaUtils.createMissingTablesAndColumns(TeamTable)
         SchemaUtils.createMissingTablesAndColumns(TeamPlayersTable)
+        SchemaUtils.createMissingTablesAndColumns(VoteTable)
     }
 
     val adminUsername = "admin"
@@ -59,8 +62,7 @@ fun Application.configureDatabases(recreate: Boolean = false) {
                 globalScore = 0.0f,
                 money = 15.0f,
                 player = Player(adminUsername, 0.0f, 0, 0.0f),
-                team = Team("adminTeam", emptyList()),
-                playersVoted = emptyList()
+                team = Team("adminTeam", emptyList())
             )
             PostgresUserRepository.addUser(adminUser)
         }

@@ -6,11 +6,10 @@ import org.mindrot.jbcrypt.BCrypt
 data class User(
     var username: String,
     var password: String,
-    var globalScore: Float = 0.0f,             // VALOR PADRÃO ADICIONADO
-    var money: Float = 0.0f,                   // VALOR PADRÃO ADICIONADO
+    var globalScore: Float = 0.0f,
+    var money: Float = 0.0f,
     var player: Player?,
-    var team: Team?,
-    var playersVoted: List<String> = emptyList() // VALOR PADRÃO ADICIONADO
+    var team: Team?
 ) {
     fun hashPassword(): String = BCrypt.hashpw(password, BCrypt.gensalt())
 
