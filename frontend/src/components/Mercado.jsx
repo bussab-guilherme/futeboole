@@ -1,51 +1,206 @@
+// Mercado.jsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "./Mercado.css"
 import Page from "../containers/Page"
 import SoccerField from "./SoccerField"
 import UserList from "./UserList"
 
 function Mercado() {
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [marketPlayers, setMarketPlayers] = useState([]);
+  const [myTeam, setMyTeam] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [money, setMoney] = useState(null); // MODIFICADO: Iniciar com null é mais seguro
 
-  // Dados de exemplo - em produção viriam da API
-  const users = [
-    { id: 1, username: "João", price: 10.5, playerScore: 8.7 },
-    { id: 2, username: "Maria", price: 12.3, playerScore: 9.2 },
-    { id: 3, username: "Pedro", price: 8.7, playerScore: 7.5 },
-    { id: 4, username: "Ana", price: 11.0, playerScore: 8.9 },
-    { id: 5, username: "Carlos", price: 9.8, playerScore: 8.1 },
-    { id: 6, username: "Luiza", price: 13.5, playerScore: 9.7 },
-    { id: 7, username: "Rafael", price: 7.9, playerScore: 6.8 },
-    { id: 8, username: "Juliana", price: 10.2, playerScore: 8.5 },
-  ]
+  // Estado do time posicionado no campo (agora vive aqui no pai)
+  const [teamLayout, setTeamLayout] = useState({
+    goalkeeper: null, defender1: null, defender2: null, midfielder1: null, midfielder2: null,
+  });
 
-  const handleUserSelect = (user) => {
-    // Se clicar no mesmo usuário já selecionado, desseleciona
-    if (selectedUser && selectedUser.id === user.id) {
-      setSelectedUser(null)
-    } else {
-      setSelectedUser(user)
+  // Efeito para buscar os dados iniciais
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [marketResponse, teamResponse] = await Promise.all([
+          fetch("/api/market/allPlayersPrice", { credentials: 'include' }),
+          fetch("/api/users/me", { credentials: 'include' })
+        ]);
+
+        if (!marketResponse.ok) throw new Error(`Erro ao buscar mercado: ${await marketResponse.text()}`);
+        if (!teamResponse.ok) throw new Error(`Erro ao buscar time: ${await teamResponse.text()}`);
+        
+        const marketData = await marketResponse.json();
+        const userData = await teamResponse.json();
+        
+        const transformedMarket = marketData.map(pair => ({ id: pair.first, username: pair.first, price: pair.second, playerScore: 'N/A' }));
+
+        setMarketPlayers(transformedMarket);
+        setMyTeam(userData.team);
+        setMoney(userData.money);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Efeito para popular o campo quando os dados do time chegam
+  useEffect(() => {
+    // MODIFICADO: Adicionado checagem de marketPlayers para evitar race condition
+    if (myTeam && myTeam.players && marketPlayers.length > 0) {
+      const positions = ['goalkeeper', 'defender1', 'defender2', 'midfielder1', 'midfielder2'];
+      const newTeamLayout = {};
+      positions.forEach(pos => newTeamLayout[pos] = null);
+
+      myTeam.players.forEach((player, index) => {
+        if (index < positions.length) {
+          // Adiciona o preço ao jogador no layout para uso futuro (ex: venda)
+          const marketInfo = marketPlayers.find(mp => mp.username === player.playerName);
+          newTeamLayout[positions[index]] = {
+              ...player,
+              price: marketInfo?.price || 0 // Pega o preço do mercado
+          };
+        }
+      });
+      setTeamLayout(newTeamLayout);
     }
-  }
+  }, [myTeam, marketPlayers]); // MODIFICADO: Depender de marketPlayers também
+
+
+  // LÓGICA DE MANIPULAÇÃO DO TIME (AGORA CENTRALIZADA)
+
+  const deletePlayer = async (position, player) => {
+    const originalLayout = { ...teamLayout };
+    const originalMoney = money; // Guarda o dinheiro para rollback
+
+    setTeamLayout(prev => ({ ...prev, [position]: null })); // Atualização otimista
+    
+    try {
+      const response = await fetch(`/api/users/deleteFromTeam/${player.playerName}`, { method: 'PUT', credentials: 'include' });
+      if (!response.ok) throw new Error(await response.text());
+      const responseData = await response.json();
+
+      // MODIFICADO: Usar a chave correta 'newMoney' da API
+      setMoney(responseData.newMoney); 
+
+      setMyTeam(prev => ({...prev, players: prev.players.filter(p => p.playerName !== player.playerName)}));
+    } catch (error) {
+      setTeamLayout(originalLayout); // Rollback do time
+      setMoney(originalMoney);      // Rollback do dinheiro
+      alert(`Erro ao remover jogador: ${error.message}`);
+    }
+  };
+
+  const addPlayer = async (position, player) => {
+    const originalLayout = { ...teamLayout };
+    const originalMoney = money; // Guarda o dinheiro para rollback
+
+    const newPlayerForLayout = {
+      ...player,
+      playerName: player.username,
+    };
+    setTeamLayout(prev => ({ ...prev, [position]: newPlayerForLayout }));
+
+    try {
+      const response = await fetch(`/api/users/addToTeam/${player.username}`, { method: 'PUT', credentials: 'include' });
+      if (!response.ok) throw new Error(await response.text());
+      const responseData = await response.json();
+      
+      // MODIFICADO: Usar a chave correta 'newMoney' da API
+      setMoney(responseData.newMoney); 
+      
+      // Atualizar myTeam DEPOIS de confirmar a compra
+      setMyTeam(prev => ({...prev, players: [...prev.players, { ...player, playerName: player.username }]}));
+    } catch (error) {
+      setTeamLayout(originalLayout); // Rollback
+      setMoney(originalMoney); // Rollback do dinheiro
+      alert(`Erro ao adicionar jogador: ${error.message}`);
+    }
+  };
+
+  const handleConfirmAddPlayer = () => {
+    if (!selectedUser) return;
+    if (money < selectedUser.price) {
+        alert("Dinheiro insuficiente!");
+        return;
+    }
+
+    const emptyPosition = Object.keys(teamLayout).find(pos => teamLayout[pos] === null);
+
+    if (emptyPosition) {
+      addPlayer(emptyPosition, selectedUser);
+      setSelectedUser(null);
+    } else {
+      alert("Seu time está cheio!");
+    }
+  };
+  
+  const handleUserSelect = (user) => {
+    if (selectedUser && selectedUser.id === user.id) {
+      setSelectedUser(null);
+    } else {
+      setSelectedUser(user);
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) return <div className="mercado-status">Carregando...</div>;
+    if (error) return <div className="mercado-status error">{error}</div>;
+
+    const isPlayerInTeam = myTeam?.players.some(p => p.playerName === selectedUser?.username);
+
+    return (
+      <div className="mercado-layout-grid">
+        <div className="user-list-container">
+          <h2>Jogadores Disponíveis</h2>
+          <UserList money={money} users={marketPlayers} onSelectUser={handleUserSelect} selectedUser={selectedUser} myTeam={myTeam} />
+        </div>
+
+        <div className="mercado-actions">
+          <button 
+            className="confirm-button"
+            onClick={handleConfirmAddPlayer}
+            disabled={!selectedUser || isPlayerInTeam}
+          >
+            Adicionar Jogador
+          </button>
+        </div>
+
+        <div className="field-container">
+          <SoccerField teamLayout={teamLayout} onPlayerDelete={deletePlayer} />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Page>
-      <h1>Mercado</h1>
+      <div className="mercado-header">
+        {myTeam && <h2 className="team-name-display">{myTeam.teamName}</h2>}
+        {typeof money === 'number' && (
+          <div
+            className={`money-display${
+              money === 0
+                ? ' money-red'
+                : money < 5
+                ? ' money-yellow'
+                : ''
+            }`}
+          >
+            Dinheiro: R$ {money.toFixed(2)}
+          </div>
+        )}
+      </div>
       <div className="mercado-container fade-in">
-        <div className="mercado-layout">
-          <div className="user-list-container">
-            <h2>Jogadores Disponíveis</h2>
-            <UserList users={users} onSelectUser={handleUserSelect} selectedUser={selectedUser} />
-          </div>
-          <div className="field-container">
-            <SoccerField selectedUser={selectedUser} />
-          </div>
-        </div>
+        {renderContent()}
       </div>
     </Page>
-  )
+  );
 }
 
-export default Mercado
+export default Mercado;

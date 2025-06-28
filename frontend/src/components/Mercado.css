@@ -52,3 +52,85 @@
   margin-bottom: 15px;
   text-align: center;
 }
+
+/* Em Mercado.css */
+
+.mercado-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.team-name-display {
+  color: #b3e6ff;
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-align: center;
+  background: linear-gradient(90deg, #b3e6ff 0%, #e0f7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Novo layout em grid com 3 colunas */
+.mercado-layout-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr 4fr; /* Lista | Ações | Campo */
+  gap: 20px;
+  align-items: start;
+}
+
+.mercado-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding-top: 40px; /* Para alinhar mais ou menos com o topo do campo */
+}
+
+.confirm-button {
+  background-color: #4cd964;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background-color: #3db852;
+  transform: translateY(-2px);
+}
+
+.confirm-button:disabled {
+  background-color: #555;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.money-display {
+  background-color: #222;
+  color: #51ff00;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 1.1em;
+  font-weight: bold;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Red when money is 0 */
+.money-display.money-red {
+  color: #ff3b3b;
+}
+
+/* Yellow when money is less than 5 but not 0 */
+.money-display.money-yellow {
+  color: #ffe600;
+}

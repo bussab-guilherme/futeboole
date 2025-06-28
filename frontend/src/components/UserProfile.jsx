@@ -53,8 +53,10 @@ function UserProfile({ user, onClose }) {
             <h5>Meu Time:</h5>
             {user.team.players.length > 0 ? (
               <ul>
-                {user.team.map((player, index) => (
-                  <li key={index}>{player}</li>
+                {user.team.players.map((player) => (
+                  <li key={player.playerName}>
+                    {player.playerName}
+                  </li>
                 ))}
               </ul>
             ) : (

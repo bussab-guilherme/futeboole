@@ -1,12 +1,11 @@
 import "./ListElement.css"
 
-function ListElement({ name, position, pontos, acertos }) {
+function ListElement({ name, pontos, position }) {
   return (
     <div className="list-element">
       <span className="position">{position}</span>
       <span className="name">{name}</span>
       <span className="points">{pontos}</span>
-      <span className="hits">{acertos}</span>
     </div>
   )
 }
