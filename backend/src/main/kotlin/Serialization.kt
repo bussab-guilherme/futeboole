@@ -53,6 +53,13 @@ fun Application.configureSerialization() {
                     call.respond(HttpStatusCode.BadRequest, "Invalid Username")
                 }
             }
+            get ("/players") {
+                if (Market.isOpen()) {
+                    call.respond(HttpStatusCode.BadRequest, "Market Open at the Moment")
+                }
+                val players = PostgresPlayerRepository.getAllPlayers()
+                call.respond(players)
+            }
             post("/register") {
                 try {
                     val payload = call.receive<User>()

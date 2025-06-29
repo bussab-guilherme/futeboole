@@ -6,6 +6,8 @@ import "./Mercado.css"
 import Page from "../containers/Page"
 import SoccerField from "./SoccerField"
 import UserList from "./UserList"
+import Notification from "./Notification"
+import MercadoFechado from "./MercadoFechado" // NOVO: Importa o componente
 
 function Mercado() {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -13,29 +15,54 @@ function Mercado() {
   const [myTeam, setMyTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [money, setMoney] = useState(null); // MODIFICADO: Iniciar com null é mais seguro
+  const [money, setMoney] = useState(null);
+  const [notification, setNotification] = useState({ text: '', type: '' });
+  const [isMarketClosed, setIsMarketClosed] = useState(false); // NOVO: Estado para controlar o mercado
 
-  // Estado do time posicionado no campo (agora vive aqui no pai)
+  // Estado do time posicionado no campo
   const [teamLayout, setTeamLayout] = useState({
-    goalkeeper: null, defender1: null, defender2: null, midfielder1: null, midfielder2: null,
+    goalkeeper: null,
+    defender1: null,
+    defender2: null,
+    midfielder1: null,
+    midfielder2: null,
   });
 
   // Efeito para buscar os dados iniciais
   useEffect(() => {
     const fetchData = async () => {
+      setIsMarketClosed(false);
+      setError(null);
+      setLoading(true);
+
       try {
         const [marketResponse, teamResponse] = await Promise.all([
           fetch("/api/market/allPlayersPrice", { credentials: 'include' }),
           fetch("/api/users/me", { credentials: 'include' })
         ]);
 
-        if (!marketResponse.ok) throw new Error(`Erro ao buscar mercado: ${await marketResponse.text()}`);
+        if (!marketResponse.ok) {
+          if (marketResponse.status === 400) {
+            const errorText = await marketResponse.text();
+            if (errorText.toLowerCase().includes("market not open")) {
+              setIsMarketClosed(true);
+              return;
+            }
+          }
+          throw new Error(`Erro ao buscar mercado: ${await marketResponse.text()}`);
+        }
+
         if (!teamResponse.ok) throw new Error(`Erro ao buscar time: ${await teamResponse.text()}`);
-        
+
         const marketData = await marketResponse.json();
         const userData = await teamResponse.json();
-        
-        const transformedMarket = marketData.map(pair => ({ id: pair.first, username: pair.first, price: pair.second, playerScore: 'N/A' }));
+
+        const transformedMarket = marketData.map(pair => ({
+          id: pair.first,
+          username: pair.first,
+          price: pair.second,
+          playerScore: 'N/A'
+        }));
 
         setMarketPlayers(transformedMarket);
         setMyTeam(userData.team);
@@ -51,7 +78,6 @@ function Mercado() {
 
   // Efeito para popular o campo quando os dados do time chegam
   useEffect(() => {
-    // MODIFICADO: Adicionado checagem de marketPlayers para evitar race condition
     if (myTeam && myTeam.players && marketPlayers.length > 0) {
       const positions = ['goalkeeper', 'defender1', 'defender2', 'midfielder1', 'midfielder2'];
       const newTeamLayout = {};
@@ -59,75 +85,72 @@ function Mercado() {
 
       myTeam.players.forEach((player, index) => {
         if (index < positions.length) {
-          // Adiciona o preço ao jogador no layout para uso futuro (ex: venda)
           const marketInfo = marketPlayers.find(mp => mp.username === player.playerName);
           newTeamLayout[positions[index]] = {
-              ...player,
-              price: marketInfo?.price || 0 // Pega o preço do mercado
+            ...player,
+            price: marketInfo?.price || 0
           };
         }
       });
       setTeamLayout(newTeamLayout);
     }
-  }, [myTeam, marketPlayers]); // MODIFICADO: Depender de marketPlayers também
-
-
-  // LÓGICA DE MANIPULAÇÃO DO TIME (AGORA CENTRALIZADA)
+  }, [myTeam, marketPlayers]);
 
   const deletePlayer = async (position, player) => {
     const originalLayout = { ...teamLayout };
-    const originalMoney = money; // Guarda o dinheiro para rollback
+    const originalMoney = money;
 
-    setTeamLayout(prev => ({ ...prev, [position]: null })); // Atualização otimista
-    
+    setTeamLayout(prev => ({ ...prev, [position]: null }));
+
     try {
       const response = await fetch(`/api/users/deleteFromTeam/${player.playerName}`, { method: 'PUT', credentials: 'include' });
       if (!response.ok) throw new Error(await response.text());
       const responseData = await response.json();
-
-      // MODIFICADO: Usar a chave correta 'newMoney' da API
-      setMoney(responseData.newMoney); 
-
-      setMyTeam(prev => ({...prev, players: prev.players.filter(p => p.playerName !== player.playerName)}));
+      setMoney(responseData.newMoney);
+      setMyTeam(prev => ({
+        ...prev,
+        players: prev.players.filter(p => p.playerName !== player.playerName)
+      }));
     } catch (error) {
-      setTeamLayout(originalLayout); // Rollback do time
-      setMoney(originalMoney);      // Rollback do dinheiro
-      alert(`Erro ao remover jogador: ${error.message}`);
+      setTeamLayout(originalLayout);
+      setMoney(originalMoney);
+      setError(`Erro ao remover jogador: ${error.message}`);
     }
   };
 
   const addPlayer = async (position, player) => {
     const originalLayout = { ...teamLayout };
-    const originalMoney = money; // Guarda o dinheiro para rollback
+    const originalMoney = money;
 
     const newPlayerForLayout = {
       ...player,
       playerName: player.username,
     };
+
     setTeamLayout(prev => ({ ...prev, [position]: newPlayerForLayout }));
 
     try {
       const response = await fetch(`/api/users/addToTeam/${player.username}`, { method: 'PUT', credentials: 'include' });
       if (!response.ok) throw new Error(await response.text());
       const responseData = await response.json();
-      
-      // MODIFICADO: Usar a chave correta 'newMoney' da API
-      setMoney(responseData.newMoney); 
-      
-      // Atualizar myTeam DEPOIS de confirmar a compra
-      setMyTeam(prev => ({...prev, players: [...prev.players, { ...player, playerName: player.username }]}));
+      setMoney(responseData.newMoney);
+      setMyTeam(prev => ({
+        ...prev,
+        players: [...prev.players, { ...player, playerName: player.username }]
+      }));
     } catch (error) {
-      setTeamLayout(originalLayout); // Rollback
-      setMoney(originalMoney); // Rollback do dinheiro
-      alert(`Erro ao adicionar jogador: ${error.message}`);
+      setTeamLayout(originalLayout);
+      setMoney(originalMoney);
+      setError(`Erro ao adicionar jogador: ${error.message}`);
     }
   };
 
   const handleConfirmAddPlayer = () => {
     if (!selectedUser) return;
     if (money < selectedUser.price) {
-        alert("Dinheiro insuficiente!");
-        return;
+      setNotification({ text: "Dinheiro insuficiente!", type: "error" });
+      setTimeout(() => setNotification({ text: '', type: '' }), 3500);
+      return;
     }
 
     const emptyPosition = Object.keys(teamLayout).find(pos => teamLayout[pos] === null);
@@ -136,10 +159,11 @@ function Mercado() {
       addPlayer(emptyPosition, selectedUser);
       setSelectedUser(null);
     } else {
-      alert("Seu time está cheio!");
+      setNotification({ text: "Seu time está cheio!", type: "error" });
+      setTimeout(() => setNotification({ text: '', type: '' }), 3500);
     }
   };
-  
+
   const handleUserSelect = (user) => {
     if (selectedUser && selectedUser.id === user.id) {
       setSelectedUser(null);
@@ -150,7 +174,8 @@ function Mercado() {
 
   const renderContent = () => {
     if (loading) return <div className="mercado-status">Carregando...</div>;
-    if (error) return <div className="mercado-status error">{error}</div>;
+    if (isMarketClosed) return <MercadoFechado />;
+    if (error) return <div className="mercado-status error-message">Erro ao carregar os dados: {error}</div>;
 
     const isPlayerInTeam = myTeam?.players.some(p => p.playerName === selectedUser?.username);
 
@@ -158,11 +183,17 @@ function Mercado() {
       <div className="mercado-layout-grid">
         <div className="user-list-container">
           <h2>Jogadores Disponíveis</h2>
-          <UserList money={money} users={marketPlayers} onSelectUser={handleUserSelect} selectedUser={selectedUser} myTeam={myTeam} />
+          <UserList
+            money={money}
+            users={marketPlayers}
+            onSelectUser={handleUserSelect}
+            selectedUser={selectedUser}
+            myTeam={myTeam}
+          />
         </div>
 
         <div className="mercado-actions">
-          <button 
+          <button
             className="confirm-button"
             onClick={handleConfirmAddPlayer}
             disabled={!selectedUser || isPlayerInTeam}
@@ -179,27 +210,30 @@ function Mercado() {
   };
 
   return (
-    <Page>
-      <div className="mercado-header">
-        {myTeam && <h2 className="team-name-display">{myTeam.teamName}</h2>}
-        {typeof money === 'number' && (
-          <div
-            className={`money-display${
-              money === 0
-                ? ' money-red'
-                : money < 5
-                ? ' money-yellow'
-                : ''
-            }`}
-          >
-            Dinheiro: R$ {money.toFixed(2)}
-          </div>
-        )}
-      </div>
-      <div className="mercado-container fade-in">
-        {renderContent()}
-      </div>
-    </Page>
+    <>
+      <Notification message={notification.text} type={notification.type} />
+      <Page>
+        <div className="mercado-header">
+          {myTeam && <h2 className="team-name-display">{myTeam.teamName}</h2>}
+          {typeof money === 'number' && (
+            <div
+              className={`money-display${
+                money === 0
+                  ? ' money-red'
+                  : money < 5
+                  ? ' money-yellow'
+                  : ''
+              }`}
+            >
+              Dinheiro: R$ {money.toFixed(2)}
+            </div>
+          )}
+        </div>
+        <div className="mercado-container fade-in">
+          {renderContent()}
+        </div>
+      </Page>
+    </>
   );
 }
 
