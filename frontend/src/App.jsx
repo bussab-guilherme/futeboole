@@ -5,10 +5,12 @@ import MercadoRankingPage from "./pages/MercadoRankingPage"
 import Header from "./containers/Header"
 import RegisterPage from "./pages/RegisterPage"
 import RegisterDetails from "./pages/RegisterDetails"
+import { UserTeamProvider } from "./contexts/UserTeamContext"
 
 function App() {
   return (
     <Router>
+      <UserTeamProvider>
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -17,6 +19,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/register-details" element={<RegisterDetails />} />
       </Routes>
+      </UserTeamProvider>
     </Router>
   )
 }

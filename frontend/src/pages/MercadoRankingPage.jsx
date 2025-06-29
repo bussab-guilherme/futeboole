@@ -1,92 +1,106 @@
-// MercadoRankingPage.jsx
-
+// frontend/src/pages/MercadoRankingPage.jsx
 "use client"
+
+import { useState, useEffect } from "react"
+import { useUserTeam } from "../contexts/UserTeamContext"
 import Page from "../containers/Page"
 import Button from "../containers/Button"
 import Mercado from "../components/Mercado"
 import Ranking from "../components/Ranking"
 import Votacao from "../components/Votacao"
-import AdminControl from "../components/AdminControl"; // 1. IMPORTAR o novo componente
-import { useState, useEffect } from "react"
+import AdminControl from "../components/AdminControl"
 import "./MercadoRankingPage.css"
 
 function MercadoRankingPage() {
-  const [mostrar, setMostrar] = useState("mercado")
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // 2. NOVO ESTADO para o admin
-  const [loading, setLoading] = useState(true); // Estado para o carregamento da página
+  const [activeTab, setActiveTab] = useState("mercado");
+  
+  // 1. O estado do mercado é gerenciado aqui, na página principal.
+  const [isMarketOpen, setIsMarketOpen] = useState(true); 
 
+  // 2. Todos os dados do usuário vêm do nosso contexto robusto.
+  const { currentUser, loading: isUserLoading } = useUserTeam(); 
+  const isAdmin = currentUser?.username === "admin";
+
+  // 3. Este useEffect agora apenas atualiza o estado, sem recarregar a página.
   useEffect(() => {
-    // 3. ATUALIZADO: Lógica para verificar o login e o status de admin
-    const checkUserStatus = async () => {
+    const checkMarketStatus = async () => {
       try {
-        const response = await fetch("/api/users/me", { credentials: 'include' });
+        const response = await fetch('/api/market/status', { credentials: 'include' });
         if (response.ok) {
-          const userData = await response.json();
-          setIsLoggedIn(true);
-          // Assumindo que o objeto do usuário tem uma propriedade 'role' ou 'isAdmin'
-          // Ajuste 'userData.role === "admin"' conforme a sua API
-          if (userData.username === "admin") {
-            setIsAdmin(true);
-          }
+            const data = await response.json();
+            setIsMarketOpen(data.isOpen);
+        } else {
+            // Se a API de status falhar, assumimos que o mercado está fechado.
+            setIsMarketOpen(false);
         }
       } catch (error) {
-        console.error("Erro ao verificar status do usuário:", error);
-      } finally {
-        setLoading(false); // Finaliza o carregamento em qualquer caso
+        console.error("Erro ao verificar status do mercado:", error);
+        setIsMarketOpen(false);
       }
     };
-    checkUserStatus();
-  }, []);
 
-  // Tela de carregamento enquanto verifica o status do usuário
-  if (loading) {
+    checkMarketStatus();
+    const intervalId = setInterval(checkMarketStatus, 10000); // Continua verificando a cada 10s
+
+    return () => clearInterval(intervalId);
+  }, []); // Roda apenas uma vez para iniciar o "polling".
+
+  // Tela de carregamento enquanto o contexto busca os dados do usuário.
+  if (isUserLoading) {
     return (
         <Page>
-            <div className="not-logged-message">Carregando...</div>
+            <div className="loading-message">Carregando...</div>
         </Page>
     );
   }
 
-  // Tela se não estiver logado
-  if (!isLoggedIn) {
-    return (
-      <Page>
-        <div className="not-logged-message">
-          <h2>Você precisa estar logado para acessar esta página</h2>
-          <Button onClick={() => (window.location.href = "/login")}>Fazer Login</Button>
-        </div>
-      </Page>
-    )
+  // Se, após o carregamento, não houver usuário, redirecionamos.
+  if (!currentUser) {
+    // É melhor usar a navegação do React Router se possível, mas reload funciona.
+    window.location.href = "/login";
+    return null; // Retorna null para evitar renderizar qualquer coisa durante o redirecionamento
   }
 
-  // Conteúdo principal da página para usuários logados
+  // Função para renderizar o conteúdo da aba ativa.
+  const renderActiveTabContent = () => {
+    switch (activeTab) {
+      case 'mercado':
+        // 4. Passamos o estado do mercado como uma prop.
+        return <Mercado isMarketOpen={isMarketOpen} />;
+      case 'ranking':
+        return <Ranking />;
+      case 'votacao':
+        // 5. A votação está aberta quando o mercado está FECHADO.
+        return <Votacao isVotingOpen={!isMarketOpen} />;
+      default:
+        return <Mercado isMarketOpen={isMarketOpen} />;
+    }
+  };
+
   return (
-    // 4. ADICIONADO: Um wrapper para permitir o posicionamento absoluto do painel de admin
     <div style={{ position: 'relative', width: '100%' }}> 
+      {/* O Header já é renderizado pelo App.jsx e se atualiza via contexto */}
       <Page>
-        {isAdmin && <AdminControl />} {/* 5. RENDERIZAÇÃO CONDICIONAL do painel */}
+        {isAdmin && <AdminControl />}
         
         <div className="mercado-ranking-tabs">
-          <Button onClick={() => setMostrar("mercado")} className={mostrar === "mercado" ? "active-tab" : ""}>
+          <Button onClick={() => setActiveTab("mercado")} className={activeTab === "mercado" ? "active-tab" : ""}>
             Mercado
           </Button>
-          <Button onClick={() => setMostrar("ranking")} className={mostrar === "ranking" ? "active-tab" : ""}>
+          <Button onClick={() => setActiveTab("ranking")} className={activeTab === "ranking" ? "active-tab" : ""}>
             Ranking
           </Button>
-          <Button onClick={() => setMostrar("votacao")} className={mostrar === "votacao" ? "active-tab" : ""}>
+          <Button onClick={() => setActiveTab("votacao")} className={activeTab === "votacao" ? "active-tab" : ""}>
             Votação
           </Button>
         </div>
 
         <div className="mercado-ranking-content">
-          {mostrar === "mercado" && <Mercado />}
-          {mostrar === "ranking" && <Ranking />}
-          {mostrar === "votacao" && <Votacao />}
+          {renderActiveTabContent()}
         </div>
       </Page>
     </div>
   )
 }
 
-export default MercadoRankingPage
+export default MercadoRankingPage;

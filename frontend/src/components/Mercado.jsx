@@ -1,213 +1,125 @@
-// Mercado.jsx
+// frontend/src/components/Mercado.jsx
 "use client"
 
 import { useState, useEffect } from "react"
 import "./Mercado.css"
 import Page from "../containers/Page"
 import SoccerField from "./SoccerField"
+import { useUserTeam } from "../contexts/UserTeamContext";
 import UserList from "./UserList"
 import Notification from "./Notification"
-import MercadoFechado from "./MercadoFechado" // NOVO: Importa o componente
+import MercadoFechado from "./MercadoFechado"
 
-function Mercado() {
+// A prop isMarketOpen virá da PaginaMercadoRanking
+function Mercado({ isMarketOpen }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [marketPlayers, setMarketPlayers] = useState([]);
-  const [myTeam, setMyTeam] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [money, setMoney] = useState(null);
   const [notification, setNotification] = useState({ text: '', type: '' });
-  const [isMarketClosed, setIsMarketClosed] = useState(false); // NOVO: Estado para controlar o mercado
 
-  // Estado do time posicionado no campo
+  // 1. Obtemos TUDO que precisamos do nosso contexto.
+  // Chega de 'refetchUser', agora usamos as funções otimizadas!
+  const { 
+    myTeam, 
+    money, 
+    loading: userLoading, 
+    error: contextError, 
+    addPlayerToTeam, 
+    removePlayerFromTeam 
+  } = useUserTeam();
+
+  // O estado do layout do campo continua local, pois é apenas visual.
   const [teamLayout, setTeamLayout] = useState({
-    goalkeeper: null,
-    defender1: null,
-    defender2: null,
-    midfielder1: null,
-    midfielder2: null,
+    goalkeeper: null, defender1: null, defender2: null, midfielder1: null, midfielder2: null,
   });
 
-  // Efeito para buscar os dados iniciais
+  // Efeito para buscar os dados do mercado (jogadores e preços)
   useEffect(() => {
-    const fetchData = async () => {
-      setIsMarketClosed(false);
-      setError(null);
-      setLoading(true);
+    // Se a página pai já disse que o mercado está fechado, nem tentamos buscar.
+    if (!isMarketOpen) {
+      setMarketPlayers([]); // Limpa a lista de jogadores do mercado
+      return;
+    }
 
+    const fetchMarketData = async () => {
       try {
-        const [marketResponse, teamResponse] = await Promise.all([
-          fetch("/api/market/allPlayersPrice", { credentials: 'include' }),
-          fetch("/api/users/me", { credentials: 'include' })
-        ]);
-
-        if (!marketResponse.ok) {
-          if (marketResponse.status === 400) {
-            const errorText = await marketResponse.text();
-            if (errorText.toLowerCase().includes("market not open")) {
-              setIsMarketClosed(true);
-              return;
-            }
-          }
-          throw new Error(`Erro ao buscar mercado: ${await marketResponse.text()}`);
+        const response = await fetch("/api/market/allPlayersPrice", { credentials: 'include' });
+        if (!response.ok) {
+          throw new Error("Não foi possível carregar os dados do mercado.");
         }
-
-        if (!teamResponse.ok) throw new Error(`Erro ao buscar time: ${await teamResponse.text()}`);
-
-        const marketData = await marketResponse.json();
-        const userData = await teamResponse.json();
-
+        const marketData = await response.json();
         const transformedMarket = marketData.map(pair => ({
-          id: pair.first,
-          username: pair.first,
-          price: pair.second,
-          playerScore: 'N/A'
+          id: pair.first, username: pair.first, price: pair.second, playerScore: 'N/A'
         }));
-
         setMarketPlayers(transformedMarket);
-        setMyTeam(userData.team);
-        setMoney(userData.money);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        setNotification({ text: error.message, type: 'error' });
+        setTimeout(() => setNotification({ text: '', type: '' }), 3500);
       }
     };
-    fetchData();
-  }, []);
 
-  // Efeito para popular o campo quando os dados do time chegam
+    fetchMarketData();
+  }, [isMarketOpen]); // Depende do estado que vem da página pai
+
+  // Efeito para sincronizar o campo de futebol com os dados do time do contexto
   useEffect(() => {
-    if (myTeam && myTeam.players && marketPlayers.length > 0) {
+    if (myTeam && myTeam.players) {
       const positions = ['goalkeeper', 'defender1', 'defender2', 'midfielder1', 'midfielder2'];
       const newTeamLayout = {};
-      positions.forEach(pos => newTeamLayout[pos] = null);
+      positions.forEach(pos => newTeamLayout[pos] = null); // Limpa o layout
 
       myTeam.players.forEach((player, index) => {
         if (index < positions.length) {
           const marketInfo = marketPlayers.find(mp => mp.username === player.playerName);
-          newTeamLayout[positions[index]] = {
-            ...player,
-            price: marketInfo?.price || 0
-          };
+          newTeamLayout[positions[index]] = { ...player, price: marketInfo?.price || 0 };
         }
       });
       setTeamLayout(newTeamLayout);
-    }
-  }, [myTeam, marketPlayers]);
-
-  const deletePlayer = async (position, player) => {
-    const originalLayout = { ...teamLayout };
-    const originalMoney = money;
-
-    setTeamLayout(prev => ({ ...prev, [position]: null }));
-
-    try {
-      const response = await fetch(`/api/users/deleteFromTeam/${player.playerName}`, { method: 'PUT', credentials: 'include' });
-      if (!response.ok) throw new Error(await response.text());
-      const responseData = await response.json();
-      setMoney(responseData.newMoney);
-      setMyTeam(prev => ({
-        ...prev,
-        players: prev.players.filter(p => p.playerName !== player.playerName)
-      }));
-    } catch (error) {
-      setTeamLayout(originalLayout);
-      setMoney(originalMoney);
-      setError(`Erro ao remover jogador: ${error.message}`);
-    }
-  };
-
-  const addPlayer = async (position, player) => {
-    const originalLayout = { ...teamLayout };
-    const originalMoney = money;
-
-    const newPlayerForLayout = {
-      ...player,
-      playerName: player.username,
-    };
-
-    setTeamLayout(prev => ({ ...prev, [position]: newPlayerForLayout }));
-
-    try {
-      const response = await fetch(`/api/users/addToTeam/${player.username}`, { method: 'PUT', credentials: 'include' });
-      if (!response.ok) throw new Error(await response.text());
-      const responseData = await response.json();
-      setMoney(responseData.newMoney);
-      setMyTeam(prev => ({
-        ...prev,
-        players: [...prev.players, { ...player, playerName: player.username }]
-      }));
-    } catch (error) {
-      setTeamLayout(originalLayout);
-      setMoney(originalMoney);
-      setError(`Erro ao adicionar jogador: ${error.message}`);
-    }
-  };
-
-  const handleConfirmAddPlayer = () => {
-    if (!selectedUser) return;
-    if (money < selectedUser.price) {
-      setNotification({ text: "Dinheiro insuficiente!", type: "error" });
-      setTimeout(() => setNotification({ text: '', type: '' }), 3500);
-      return;
-    }
-
-    const emptyPosition = Object.keys(teamLayout).find(pos => teamLayout[pos] === null);
-
-    if (emptyPosition) {
-      addPlayer(emptyPosition, selectedUser);
-      setSelectedUser(null);
     } else {
-      setNotification({ text: "Seu time está cheio!", type: "error" });
-      setTimeout(() => setNotification({ text: '', type: '' }), 3500);
+        // Garante que o campo esteja vazio se não houver time
+        setTeamLayout({goalkeeper: null, defender1: null, defender2: null, midfielder1: null, midfielder2: null})
+    }
+  }, [myTeam, marketPlayers]); // Re-renderiza o campo sempre que o time do contexto mudar
+
+  // **Lógica de remoção de jogador simplificada**
+  const handlePlayerDelete = async (position, player) => {
+    try {
+      await removePlayerFromTeam(player);
+      // A atualização do `teamLayout` agora é feita pelo useEffect acima,
+      // que reage à mudança no `myTeam` do contexto. Não precisamos mais do setTeamLayout aqui.
+      setNotification({ text: "Jogador removido!", type: "success" });
+    } catch (error) {
+      setNotification({ text: `Erro: ${error.message}`, type: "error" });
+    } finally {
+        setTimeout(() => setNotification({ text: '', type: '' }), 2500);
+    }
+  };
+
+  // **Lógica de adição de jogador simplificada**
+  const handleConfirmAddPlayer = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      // As validações de dinheiro e time cheio agora estão dentro da função do contexto!
+      await addPlayerToTeam(selectedUser);
+      // A atualização do `teamLayout` também virá do useEffect.
+      setNotification({ text: "Jogador adicionado!", type: "success" });
+      setSelectedUser(null);
+    } catch (error) {
+       setNotification({ text: `Erro: ${error.message}`, type: 'error' });
+    } finally {
+        setTimeout(() => setNotification({ text: '', type: '' }), 2500);
     }
   };
 
   const handleUserSelect = (user) => {
-    if (selectedUser && selectedUser.id === user.id) {
-      setSelectedUser(null);
-    } else {
-      setSelectedUser(user);
-    }
+    setSelectedUser(prev => (prev && prev.id === user.id ? null : user));
   };
 
-  const renderContent = () => {
-    if (loading) return <div className="mercado-status">Carregando...</div>;
-    if (isMarketClosed) return <MercadoFechado />;
-    if (error) return <div className="mercado-status error-message">Erro ao carregar os dados: {error}</div>;
+  if (userLoading) return <div className="mercado-status">Carregando dados do usuário...</div>;
+  if (!isMarketOpen) return <MercadoFechado />;
+  if (contextError) return <div className="mercado-status error-message">Erro: {contextError}</div>;
 
-    const isPlayerInTeam = myTeam?.players.some(p => p.playerName === selectedUser?.username);
-
-    return (
-      <div className="mercado-layout-grid">
-        <div className="user-list-container">
-          <h2>Jogadores Disponíveis</h2>
-          <UserList
-            money={money}
-            users={marketPlayers}
-            onSelectUser={handleUserSelect}
-            selectedUser={selectedUser}
-            myTeam={myTeam}
-          />
-        </div>
-
-        <div className="mercado-actions">
-          <button
-            className="confirm-button"
-            onClick={handleConfirmAddPlayer}
-            disabled={!selectedUser || isPlayerInTeam}
-          >
-            Adicionar Jogador
-          </button>
-        </div>
-
-        <div className="field-container">
-          <SoccerField teamLayout={teamLayout} onPlayerDelete={deletePlayer} />
-        </div>
-      </div>
-    );
-  };
+  const isPlayerInTeam = myTeam?.players.some(p => p.playerName === selectedUser?.username);
 
   return (
     <>
@@ -216,21 +128,34 @@ function Mercado() {
         <div className="mercado-header">
           {myTeam && <h2 className="team-name-display">{myTeam.teamName}</h2>}
           {typeof money === 'number' && (
-            <div
-              className={`money-display${
-                money === 0
-                  ? ' money-red'
-                  : money < 5
-                  ? ' money-yellow'
-                  : ''
-              }`}
-            >
+            <div className={`money-display ${money === 0 ? 'money-red' : money < 5 ? 'money-yellow' : ''}`}>
               Dinheiro: R$ {money.toFixed(2)}
             </div>
           )}
         </div>
         <div className="mercado-container fade-in">
-          {renderContent()}
+           <div className="mercado-layout-grid">
+            <div className="user-list-container">
+              <h2>Jogadores Disponíveis</h2>
+              <UserList
+                money={money}
+                users={marketPlayers}
+                onSelectUser={handleUserSelect}
+                selectedUser={selectedUser}
+                myTeam={myTeam}
+              />
+            </div>
+
+            <div className="mercado-actions">
+              <button className="confirm-button" onClick={handleConfirmAddPlayer} disabled={!selectedUser || isPlayerInTeam}>
+                Adicionar Jogador
+              </button>
+            </div>
+
+            <div className="field-container">
+              <SoccerField teamLayout={teamLayout} onPlayerDelete={handlePlayerDelete} />
+            </div>
+          </div>
         </div>
       </Page>
     </>
