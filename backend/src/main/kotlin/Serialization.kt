@@ -178,7 +178,7 @@ fun Application.configureSerialization() {
                             call.respond(HttpStatusCode.OK)
                         }
                         else {
-                            call.respond(HttpStatusCode.BadRequest, "Vote already exists")
+                            call.respond(HttpStatusCode.BadRequest, "Voto já foi computado")
                         }
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid Player Name or Score")
