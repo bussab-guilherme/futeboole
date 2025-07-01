@@ -19,13 +19,10 @@ async function safeResponseJson(response) {
   }
 }
 
-function Votacao() {
+function Votacao({ isVotingOpen }) {
   const [players, setPlayers] = useState([]);
   const [message, setMessage] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(true);
-  // LÓGICA CORRIGIDA: O estado agora reflete a realidade da votação.
-  // Começa como 'true' (fechada) até que a API nos diga o contrário.
-  const [isVotingClosed, setIsVotingClosed] = useState(true);
 
   const fetchData = useCallback(async () => {
     // Não precisamos mais resetar o estado aqui, evitando loops.
@@ -39,26 +36,8 @@ function Votacao() {
 
 
       if (!playersResponse.ok) {
-        if (playersResponse.status === 400) {
-          const errorText = await safeResponseJson(playersResponse);
-          if (typeof errorText === 'string' && errorText.toLowerCase().includes("market open")) {
-            setIsVotingClosed(true); // Votação está ABERTA
-            // Ainda precisamos buscar os votos do usuário para preencher as notas.
-            // Se essa busca falhar, o catch abaixo cuidará do erro.
-            const userVotes = await safeResponseJson(votesResponse) || [];
-            // Como a lista de jogadores falhou, não podemos continuar.
-            // Em um cenário real, você poderia ter outra API para buscar os jogadores da rodada anterior.
-            // Por enquanto, vamos assumir que não teremos jogadores e a UI mostrará uma mensagem.
-            setPlayers([]); // Limpa os jogadores para evitar dados antigos
-            return; 
-          }
-        }
         throw new Error("Erro ao buscar a lista de jogadores.");
       }
-      
-      // Se a API de jogadores funcionou, o mercado ta fechado
-  
-      setIsVotingClosed(false);
 
       if (!votesResponse.ok) throw new Error("Erro ao buscar seus votos anteriores.");
 
@@ -80,8 +59,6 @@ function Votacao() {
     } catch (error) {
       console.error("Erro ao carregar dados da votação:", error);
       setMessage({ text: error.message, type: "error" });
-      // Se deu erro, garantimos que a votação apareça como fechada para não travar o usuário.
-      setIsVotingClosed(true);
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +129,7 @@ function Votacao() {
   // LÓGICA DE RENDERIZAÇÃO CORRIGIDA E CLARA:
   // Se a votação estiver fechada, mostre o componente VotacaoFechada.
   // Caso contrário, mostre a interface de votação.
-  if (isVotingClosed) {
+  if (!isVotingOpen) {
     return <VotacaoFechada />;
   }
 

@@ -10,10 +10,11 @@ class Round {
 
     companion object {
         private var current: Round = Round()
-        private var isOver: Boolean = false
+        private var isOver: Boolean = true
 
         fun getCurrent(): Round = current
-
+        fun isOver(): Boolean = isOver
+        
         fun create() {
             Market.setClose()
             current = Round()

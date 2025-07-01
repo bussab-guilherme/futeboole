@@ -84,16 +84,17 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
-  font-size: 14px;
 }
 
 .stat-label {
   color: #aaa;
+  font-size: 15px;
 }
 
 .stat-value {
   font-weight: bold;
   color: #38b6ff;
+  font-size: 15px;
 }
 
 .user-team h5 {

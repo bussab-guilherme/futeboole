@@ -10,7 +10,7 @@ object PlayerTable : IntIdTable("PLAYERS") {
     var playerName = varchar("playername", 255).uniqueIndex()
     var playerScore = float("player_score").default(0.0f)
     var playerCountScore = integer("player_count_score").default(0)
-    var playerPrice = float("player_price").default(0.0f)
+    var playerPrice = float("player_price").default(7.0f)
 }
 
 class PlayerDAO(id : EntityID<Int>) : IntEntity(id) {

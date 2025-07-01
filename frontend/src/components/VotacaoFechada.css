@@ -18,15 +18,23 @@
 }
 
 .votacao-fechada-container h1 {
-  font-size: 2em;
-  color: #fff;
+  font-size: 44px;
+  color: #38b6ff;
   margin-bottom: 10px;
+  padding: 20px 20px;
 }
 
 .votacao-fechada-container p {
   font-size: 1.1em;
   max-width: 450px;
   line-height: 1.5;
+}
+
+.votacao-titulo {
+  font-size: 5em;
+  color: #38b6ff;
+
+  margin-bottom: 10px;
 }
 
 /* Animação simples para o ícone */

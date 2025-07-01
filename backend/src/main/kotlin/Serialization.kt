@@ -54,9 +54,6 @@ fun Application.configureSerialization() {
                 }
             }
             get ("/players") {
-                if (Market.isOpen()) {
-                    call.respond(HttpStatusCode.BadRequest, "Market Open at the Moment")
-                }
                 val players = PostgresPlayerRepository.getAllPlayers()
                 call.respond(players)
             }
@@ -207,7 +204,10 @@ fun Application.configureSerialization() {
                 }
             }
         }
-        route("api/market") {
+        route("/api/market") {
+            get("/status") {
+                call.respond(mapOf("isOpen" to Market.isOpen()))
+            }
             get ("/playerPrice/{username}") {
                 val id = call.parameters["username"]
                 if (id != null) {
@@ -245,16 +245,25 @@ fun Application.configureSerialization() {
         authenticate("adm-session") {
             route("/api/round") {
                 post("/create") {
-                    Round.create()
-                    PostgresPlayerRepository.resetPlayersScore()
-                    PostgresVoteRepository.resetVotes()
-                    call.respond(HttpStatusCode.OK)
+                    if (Round.isOver()) {
+                        Round.create()
+                        PostgresPlayerRepository.resetPlayersScore()
+                        PostgresVoteRepository.resetVotes()
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Round not over")
+                    }
+                    
                 }
                 post("/over") {
-                    PostgresPlayerRepository.updatePlayersPrice()
-                    PostgresUserRepository.updateUsersGlobalScore()
-                    Round.getCurrent().setRoundOver()
-                    call.respond(HttpStatusCode.OK)
+                    if (!Round.isOver()){
+                        PostgresPlayerRepository.updatePlayersPrice()
+                        PostgresUserRepository.updateUsersGlobalScore()
+                        Round.getCurrent().setRoundOver()
+                        call.respond(HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Round over")
+                    }
                 }
             }
         }

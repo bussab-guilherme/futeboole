@@ -9,6 +9,7 @@ import Mercado from "../components/Mercado"
 import Ranking from "../components/Ranking"
 import Votacao from "../components/Votacao"
 import AdminControl from "../components/AdminControl"
+import Report from "../components/Report"
 import "./MercadoRankingPage.css"
 
 function MercadoRankingPage() {
@@ -72,6 +73,8 @@ function MercadoRankingPage() {
       case 'votacao':
         // 5. A votação está aberta quando o mercado está FECHADO.
         return <Votacao isVotingOpen={!isMarketOpen} />;
+      case 'report':
+        return <Report isReportOpen={isMarketOpen} />;
       default:
         return <Mercado isMarketOpen={isMarketOpen} />;
     }
@@ -92,6 +95,9 @@ function MercadoRankingPage() {
           </Button>
           <Button onClick={() => setActiveTab("votacao")} className={activeTab === "votacao" ? "active-tab" : ""}>
             Votação
+          </Button>
+          <Button onClick={() => setActiveTab("report")} className={activeTab === "report" ? "active-tab" : ""} disabled={!isAdmin}>
+            Relatório
           </Button>
         </div>
 

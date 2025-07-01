@@ -5,9 +5,6 @@ import Footer from "../containers/Footer"
 import Button from "../containers/Button"
 import { useEffect, useState } from "react"
 
-
-
-
 function HomePage() {
   const [loading, setLoading] = useState(true)
   
@@ -29,22 +26,24 @@ function HomePage() {
 
   if (loading) {
     return null
-    }
+  }
 
   return (
     <div className="home-container">
       <header className="home-header">
         <h1>Bem-vindo ao Nosso Fantasy Game!</h1>
       </header>
-      <div className="home-content">
-        <p>Escolha seus amigos, monte sua equipe e ganhe pontos! Seja o melhor!</p>
+      
+      <p className="home-intro-text">Escolha seus amigos, monte sua equipe e ganhe pontos! Seja o melhor!</p>
 
+      <div className="home-actions-card">
         <Button onClick={() => (window.location.href = "/login")}>Login</Button>
 
         <p>Ainda não tem uma conta?</p>
 
         <Button onClick={() => (window.location.href = "/register")}>Registrar</Button>
       </div>
+
       <Footer />
     </div>
   )

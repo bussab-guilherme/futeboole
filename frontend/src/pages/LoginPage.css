@@ -1,0 +1,148 @@
+/* LoginPage.css */
+
+.login-container {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column; /* Organiza os itens em coluna (título em cima, card embaixo) */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+
+.page-title-container {
+  text-align: center;
+  margin-bottom: 100px; 
+  color: #e4e4e4;
+}
+
+.page-title-container h1 {
+  font-size: 72px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.page-title-container p {
+  font-size: 16px;
+  color: #b0b0b0;
+  margin: 0;
+}
+
+.login-card {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  max-width: 450px;
+  width: 100%;
+  border: 1px solid #333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.login-header {
+  background-color: #2a2a2a;
+  color: #e4e4e4;
+  padding: 20px 25px;
+  text-align: center;
+  border-bottom: 1px solid #333;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Alterado para h2 para melhor semântica HTML */
+.login-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #38b6ff;
+}
+
+.login-form {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #2a2a2a;
+  color: #e4e4e4;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #38b6ff;
+}
+
+.login-button {
+  width: 100%;
+  background-color: #38b6ff;
+  color: #000;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #2a9ae6;
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff4444;
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login-footer {
+  background-color: #2a2a2a;
+  padding: 15px 20px;
+  text-align: center;
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid #333;
+}
+
+.login-footer p {
+  margin: 0;
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #38b6ff;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 5px;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 14px;
+}
+
+.link-button:hover {
+  color: #2a9ae6;
+}

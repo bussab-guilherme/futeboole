@@ -61,16 +61,18 @@
 }
 
 .team-name-display {
-  color: #b3e6ff;
-  font-size: 2em;
-  font-weight: bold;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
+  color: #e0f7ff; /* Cor base mais clara */
+  font-size: 2.2rem; /* Tamanho levemente aumentado */
+  font-weight: 700; /* Um pouco mais de peso */
   text-align: center;
-  background: linear-gradient(90deg, #b3e6ff 0%, #e0f7ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin: 0 auto 20px auto;
+  padding-bottom: 8px;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),  /* Sombra principal para profundidade */
+    0 0 10px rgba(56, 182, 255, 0.4); /* Brilho sutil na cor do tema */
+  letter-spacing: 1px;
+  width: fit-content; /* Largura se ajusta ao conteúdo */
+  max-width: 100%;
 }
 
 /* Novo layout em grid com 3 colunas */

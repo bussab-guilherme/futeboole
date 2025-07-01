@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Button from "../containers/Button";
 import "./AdminControl.css"; // Vamos criar este arquivo para a estilização
+import Notification from "./Notification";
 
 function AdminControl() {
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,7 @@ function AdminControl() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text() || "Falha na resposta do servidor");
+        throw new Error(await response.text() || "Já existe uma partida em andamento");
       }
       
       showNotification("Nova partida criada com sucesso!", "success");
@@ -57,7 +58,9 @@ function AdminControl() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text() || "Falha na resposta do servidor");
+        
+
+        throw new Error(await response.text() || "Não há partida em andamento");
       }
 
       showNotification("Partida finalizada e preços atualizados!", "success");
@@ -80,9 +83,8 @@ function AdminControl() {
         </Button>
       </div>
       {notification.message && (
-        <div className={`admin-notification ${notification.type}`}>
-          {notification.message}
-        </div>
+        <Notification message={notification.message} type={notification.type}>
+        </Notification>
       )}
     </div>
   );
