@@ -4,7 +4,7 @@
 
 Este projeto é um jogo de fantasy football interativo, desenvolvido como parte da disciplina **MAC0350 - Introdução ao Desenvolvimento de Sistemas de Software**, ministrada pelo professor **Paulo Meirelles** na **Universidade de São Paulo (USP)**.
 
-O Futeboole simula uma liga de futebol entre amigos, onde cada participante (usuário) pode montar seu próprio time, escalar jogadores (que também são usuários), avaliar a performance deles após as partidas e competir em um ranking geral. O sistema inclui um mercado de jogadores com preços dinâmicos e um painel de administração para gerenciar as rodadas do jogo.
+O Futebooleana simula uma liga de futebol entre amigos, onde cada participante (usuário) pode montar seu próprio time, escalar jogadores (que também são usuários), avaliar a performance deles após as partidas e competir em um ranking geral. O sistema inclui um mercado de jogadores com preços dinâmicos e um painel de administração para gerenciar as rodadas do jogo.
 
 ## ✨ Funcionalidades Principais
 
