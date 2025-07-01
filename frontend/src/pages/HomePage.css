@@ -7,72 +7,52 @@
   min-height: 80vh;
   text-align: center;
   gap: 20px;
+  padding: 20px; /* Adicionado para evitar que o card cole nas bordas em telas pequenas */
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Cabeçalho com título */
 .home-header {
-  font-size: 1.7rem;
+  font-size: 2.5rem;
   font-weight: bold;
-  color: #e4e4e4;
+  color: #38b6ff;
   margin-bottom: 20px;
   padding: 10px;
 }
 
-/* Estilo do texto principal */
-.home-content p {
+/* Estilo do texto principal (fora do card) */
+.home-intro-text {
   font-size: 1.2rem;
   color: #e4e4e4;
   max-width: 600px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
-/* Seção dos botões */
-.home-content {
+
+.home-actions-card {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  max-width: 400px; 
+  width: 100%;
+  border: 1px solid #333;
+  padding: 25px 30px; 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 15px; 
 }
 
-.home-button {
-  background-color: #007bff;
-  padding: 12px 25px;
-  margin: 10px;
+.home-actions-card p {
+  color: #b0b0b0;
   font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  margin: 10px 0 0 0; 
 }
 
-.home-button a {
-  color: rgb(0, 0, 0);
-  text-decoration: none;
-}
-
-.home-button:hover {
-  background-color: #0056b3;
-}
-
-/* Rodapé */
-.home-footer {
-  font-size: 0.9rem;
-  color: #aaa;
-  margin-top: 30px;
-  text-align: center;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .home-header {
-    font-size: 2rem;
-  }
-
-  .home-content p {
-    font-size: 1rem;
-    margin-bottom: 20px;
-  }
-
-  .home-button {
-    width: 100%;
-  }
+.home-actions-card .button-container {
+  width: 100%; /* Faz o botão ocupar a largura do card */
 }

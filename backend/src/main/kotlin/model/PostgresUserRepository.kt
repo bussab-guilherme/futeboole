@@ -24,13 +24,28 @@ object PostgresUserRepository : UserRepository {
     }
 
     override suspend fun addUser(user: User): Unit = suspendTransaction {
-        UserDAO.new {
-            username = user.username
-            password = user.hashPassword()
-            player = PlayerDAO.new { playerName = user.player?.playerName ?: "" }
-            team = TeamDAO.new { teamName = user.team?.teamName ?: "" }
+    UserDAO.new {
+        username = user.username
+        password = user.hashPassword()
+
+        user.player?.let { playerData ->
+            // Garante que o nome do jogador não seja vazio
+            if (playerData.playerName.isNotBlank()) {
+                this.player = PlayerDAO.new {
+                    playerName = playerData.playerName
+                }
+            }
+        }
+
+        user.team?.let { teamData ->
+            if (teamData.teamName.isNotBlank()) {
+                this.team = TeamDAO.new {
+                    teamName = teamData.teamName
+                }
+            }
         }
     }
+}
 
     override suspend fun checkUsername(id: String): Boolean {
         return suspendTransaction { UserDAO.find { (UserTable.username eq id) }.empty() }
@@ -60,15 +75,5 @@ object PostgresUserRepository : UserRepository {
 
     override suspend fun updateUserMoney(username: String, amount: Float): Unit = suspendTransaction {
         UserDAO.find { UserTable.username eq username }.first().money += amount
-    }
-
-    override suspend fun updateUserPlayersVoted(username: String, playerName: String) : Unit = suspendTransaction {
-        UserDAO.find { UserTable.username eq username }.first().playersVoted = UserDAO.find { UserTable.username eq username }.first().playersVoted.plus(playerName)
-    }
-
-    override suspend fun resetUsersPlayersVoted() : Unit = suspendTransaction {
-        UserDAO.all().forEach { user ->
-            user.playersVoted = emptyList()
-        }
     }
 }

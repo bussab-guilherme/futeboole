@@ -1,0 +1,45 @@
+.votacao-fechada-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px 20px;
+  margin: 20px;
+  color: #ccc;
+  border-radius: 8px;
+  min-height: 450px;
+}
+
+.votacao-fechada-container .icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: tick-tock 2s infinite ease-in-out;
+}
+
+.votacao-fechada-container h1 {
+  font-size: 44px;
+  color: #38b6ff;
+  margin-bottom: 10px;
+  padding: 20px 20px;
+}
+
+.votacao-fechada-container p {
+  font-size: 1.1em;
+  max-width: 450px;
+  line-height: 1.5;
+}
+
+.votacao-titulo {
+  font-size: 5em;
+  color: #38b6ff;
+
+  margin-bottom: 10px;
+}
+
+/* Animação simples para o ícone */
+@keyframes tick-tock {
+  0% { transform: rotate(10deg); }
+  50% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}

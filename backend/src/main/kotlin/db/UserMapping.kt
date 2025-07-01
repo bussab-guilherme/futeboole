@@ -16,7 +16,6 @@ object UserTable : IntIdTable("USERS") {
     var money = float("money").default(15.0f)
     var player = reference("player", PlayerTable)
     var team = reference("team", TeamTable)
-    var playersVoted = array<String>("players_voted").default(emptyList())
 }
 
 class UserDAO(id : EntityID<Int>) : IntEntity(id) {
@@ -28,7 +27,6 @@ class UserDAO(id : EntityID<Int>) : IntEntity(id) {
     var money by UserTable.money
     var player by PlayerDAO referencedOn UserTable.player
     var team by TeamDAO referencedOn UserTable.team
-    var playersVoted by UserTable.playersVoted
 }
 
 suspend fun <T> suspendTransaction(block: Transaction.() -> T): T = newSuspendedTransaction(Dispatchers.IO, statement = block)
@@ -39,6 +37,5 @@ fun daoToModel(dao : UserDAO) = User(
     dao.globalScore,
     dao.money,
     daoToModel(dao.player),
-    daoToModel(dao.team),
-    dao.playersVoted.toList()
+    daoToModel(dao.team)
 )

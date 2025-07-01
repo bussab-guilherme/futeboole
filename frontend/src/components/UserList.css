@@ -66,3 +66,42 @@
 .user-score {
   color: #ffcc00;
 }
+
+.status-available {
+  font-style: italic;
+  font-size: 0.85em;
+  color: #4cd964;
+}
+
+.status-unavailable {
+  font-style: italic;
+  font-size: 0.85em;
+  color: #ff4d4f;
+}
+
+/* Ajuste o grid para ter 3 colunas */
+.user-list-header, .user-list-item {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+/* Estilo para o item que já está no time */
+.user-list-item.in-team {
+  background-color: rgba(110, 110, 110, 0.2);
+  cursor: not-allowed;
+  color: #888;
+}
+
+.user-list-item.in-team .user-price {
+  color: #888;
+}
+
+.user-list-item.in-team:hover {
+  background-color: rgba(110, 110, 110, 0.2);
+}
+
+/* Estilo para o texto de status na terceira coluna */
+.user-status .status-in-team {
+  font-style: italic;
+  font-size: 0.85em;
+  color: #a0a0a0;
+}

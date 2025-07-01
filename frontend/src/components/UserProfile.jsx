@@ -40,26 +40,23 @@ function UserProfile({ user, onClose }) {
           <div className="user-stats">
             <div className="stat-item">
               <span className="stat-label">Pontuação Pessoal:</span>
-              <span className="stat-value">{user.playerScore.toFixed(1)}</span>
+              <span className="stat-value">{user.player.playerScore.toFixed(1)}</span>
             </div>
 
             <div className="stat-item">
-              <span className="stat-label">Pontuação do Time:</span>
-              <span className="stat-value">{user.teamScore.toFixed(1)}</span>
-            </div>
-
-            <div className="stat-item">
-              <span className="stat-label">Votos Realizados:</span>
-              <span className="stat-value">{user.numVotes}</span>
+              <span className="stat-label">Nome do Time:</span>
+              <span className="stat-value">{user.team.teamName}</span>
             </div>
           </div>
 
           <div className="user-team">
             <h5>Meu Time:</h5>
-            {user.team.length > 0 ? (
+            {user.team.players.length > 0 ? (
               <ul>
-                {user.team.map((player, index) => (
-                  <li key={index}>{player}</li>
+                {user.team.players.map((player) => (
+                  <li key={player.playerName}>
+                    {player.playerName}
+                  </li>
                 ))}
               </ul>
             ) : (

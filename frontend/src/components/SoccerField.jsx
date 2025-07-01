@@ -1,56 +1,38 @@
+// SoccerField.jsx
 "use client"
 
-import { useState } from "react"
 import "./SoccerField.css"
 
-function SoccerField({ selectedUser }) {
-  const [selectedPosition, setSelectedPosition] = useState(null)
-  const [teamPlayers, setTeamPlayers] = useState({
-    goalkeeper: null,
-    defender1: null,
-    defender2: null,
-    midfielder1: null,
-    midfielder2: null,
-    forward: null,
-  })
+// O componente agora só precisa saber o layout do time e como deletar um jogador
+function SoccerField({ teamLayout, onPlayerDelete }) {
 
   const handlePositionClick = (position) => {
-    setSelectedPosition(position)
+    const playerInPosition = teamLayout[position];
 
-    // Se clicar em uma posição que já tem jogador, remove o jogador
-    if (teamPlayers[position]) {
-      setTeamPlayers({
-        ...teamPlayers,
-        [position]: null,
-      })
+    // A única interação é deletar um jogador que já está posicionado
+    if (playerInPosition) {
+      onPlayerDelete(position, playerInPosition);
     }
-    // Se tiver um jogador selecionado, adiciona na posição
-    else if (selectedUser) {
-      setTeamPlayers({
-        ...teamPlayers,
-        [position]: selectedUser,
-      })
-    }
-  }
+  };
 
   const renderPlayer = (position) => {
-    const player = teamPlayers[position]
+    const player = teamLayout[position];
     return (
       <div
-        className={`player-spot ${selectedPosition === position ? "selected" : ""} ${player ? "occupied" : ""}`}
+        className={`player-spot ${player ? "occupied" : ""}`}
         onClick={() => handlePositionClick(position)}
       >
         {player ? (
           <div className="player-info">
-            <div className="player-avatar">{player.username.charAt(0)}</div>
-            <div className="player-name">{player.username}</div>
+            <div className="player-avatar">{player.playerName.charAt(0).toUpperCase()}</div>
+            <div className="player-name">{player.playerName}</div>
           </div>
         ) : (
           <div className="empty-spot">+</div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="soccer-field">
@@ -62,7 +44,6 @@ function SoccerField({ selectedUser }) {
         <div className="goal-bottom"></div>
         <div className="center-line"></div>
       </div>
-
       <div className="player-positions">
         <div className="position goalkeeper">{renderPlayer("goalkeeper")}</div>
         <div className="position defenders">
@@ -74,18 +55,8 @@ function SoccerField({ selectedUser }) {
           {renderPlayer("midfielder2")}
         </div>
       </div>
-
-      {selectedPosition && (
-        <div className="selection-info">
-          {teamPlayers[selectedPosition]
-            ? `${teamPlayers[selectedPosition].username} adicionado como ${selectedPosition}`
-            : selectedUser
-              ? `Clique em uma posição para adicionar ${selectedUser.username}`
-              : `Posição ${selectedPosition} está vazia`}
-        </div>
-      )}
     </div>
   )
 }
 
-export default SoccerField
+export default SoccerField;

@@ -4,7 +4,7 @@ import com.bussab_guilherme.model.Player
 
 class Market {
     companion object {
-        private var isOpen : Boolean = false
+        private var isOpen : Boolean = true
         private var round : Round = Round()
 
         fun isOpen() : Boolean = isOpen

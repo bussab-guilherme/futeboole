@@ -1,152 +1,188 @@
+/* Animação de entrada */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-  animation: fadeIn 0.25s ease-in-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
+/* Estilos gerais do container */
 .votacao-container {
   width: 100%;
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  padding: 20px;
-  height: 500px;
+  background: #1A1A1D; /* Cor de fundo mais escura */
+  border-radius: 12px;
+  padding: 24px;
+  height: 600px; /* Aumentei a altura para mais espaço */
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #2C2C30;
 }
 
 .votacao-instrucoes {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: rgba(56, 182, 255, 0.1);
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: rgba(94, 96, 206, 0.1);
+  border-left: 5px solid #38b6ff;
   border-radius: 8px;
   text-align: center;
+  color: #EFEFEF;
 }
 
+/* Lista de jogadores com scrollbar estilizado */
 .jogadores-lista {
+  flex-grow: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  max-height: 450px;
-  overflow-y: auto;
+  gap: 16px;
+  padding-right: 10px; /* Espaço para a scrollbar */
 }
 
-.jogador-card { 
+/* Estilos da Scrollbar */
+.jogadores-lista::-webkit-scrollbar {
+  width: 8px;
+}
+.jogadores-lista::-webkit-scrollbar-track {
+  background: #1A1A1D;
+  border-radius: 4px;
+}
+.jogadores-lista::-webkit-scrollbar-thumb {
+  background-color: #38b6ff;
+  border-radius: 4px;
+}
+.jogadores-lista::-webkit-scrollbar-thumb:hover {
+  background-color: #38b6ff;
+}
+
+/* Card do Jogador */
+.jogador-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background-color: #2a2a2a;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  padding: 16px 20px;
+  background-color: #252528;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
 }
 
 .jogador-card:hover {
-  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background-color: #2f2f33;
 }
 
 .jogador-card.votado {
-  background-color: rgba(76, 217, 100, 0.1);
-  border: 1px solid rgba(76, 217, 100, 0.3);
+  background-color: rgba(45, 211, 111, 0.1);
+  border-color: rgba(45, 211, 111, 0.4);
 }
 
 .jogador-info {
   flex: 1;
 }
 
+/* --- MELHORIA PEDIDA: NOME DO JOGADOR MAIOR --- */
 .jogador-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 18px;
-}
-
-.jogador-posicao {
   margin: 0;
-  color: #aaa;
-  font-size: 14px;
+  font-size: 20px; /* Tamanho da fonte aumentado */
+  font-weight: 500;
+  color: #FFFFFF;
 }
 
+/* Controles de votação */
 .votacao-controles {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .nota-controle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .nota-botao {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background-color: #38b6ff;
   color: white;
   border: none;
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .nota-botao:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #38b6ff;
+  transform: scale(1.1);
 }
 
 .nota-botao:disabled {
-  background-color: #555;
+  background-color: #4a4a50;
+  color: #888;
   cursor: not-allowed;
 }
 
 .nota-display {
-  width: 40px;
+  width: 50px;
   height: 40px;
-  background-color: #1a1a1a;
+  background-color: #1A1A1D;
+  border: 2px solid #38b6ff;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: #38b6ff;
+  transition: all 0.2s ease;
 }
 
-.confirmar-voto {
-  min-width: 150px;
+.jogador-card.votado .nota-display {
+  border-color: #2DD36F;
+  color: #2DD36F;
 }
 
-.confirmar-voto:disabled {
-  opacity: 0.5;
-  cursor: default;
+/* --- MELHORIA PEDIDA: NOTIFICAÇÃO ESTÉTICA --- */
+@keyframes slideIn {
+  from { top: -100px; opacity: 0; }
+  to { top: 20px; opacity: 1; }
 }
 
-.mensagem-sucesso {
-  background-color: rgba(76, 217, 100, 0.2);
-  color: #4cd964;
-  padding: 10px 15px;
+@keyframes slideOut {
+  from { top: 20px; opacity: 1; }
+  to { top: -100px; opacity: 0; }
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 40%;
+  transform: translateX(-50%);
+  padding: 16px 24px;
   border-radius: 8px;
-  margin-bottom: 15px;
-  text-align: center;
-  animation: fadeIn 0.3s ease-in-out;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 3s forwards;
 }
 
-@media (max-width: 768px) {
-  .jogador-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
+.notification-success {
+  background-color: #2DD36F; /* Verde sucesso */
+}
 
-  .votacao-controles {
-    width: 100%;
-    justify-content: space-between;
-  }
+.notification-error {
+  background-color: #EB445A; /* Vermelho erro */
 }
