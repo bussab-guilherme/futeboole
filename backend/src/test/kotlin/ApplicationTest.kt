@@ -1,14 +1,22 @@
 package com.bussab_guilherme
 
+import com.bussab_guilherme.db.PlayerTable
+import com.bussab_guilherme.db.TeamPlayersTable
+import com.bussab_guilherme.db.TeamTable
 import com.bussab_guilherme.db.UserTable
+import com.bussab_guilherme.db.VoteTable
+import com.bussab_guilherme.model.Player
+import com.bussab_guilherme.model.Team
 import com.bussab_guilherme.model.User
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -19,12 +27,11 @@ class ApplicationTest {
 
     @BeforeTest
     fun setup() {
-        Database.connect(
-            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;",
-            driver = "org.h2.Driver"
-        )
+        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
         transaction {
-            SchemaUtils.create(UserTable)
+            // Drop e Create para garantir um estado limpo
+            SchemaUtils.drop(UserTable, PlayerTable, TeamTable, TeamPlayersTable, VoteTable)
+            SchemaUtils.create(UserTable, PlayerTable, TeamTable, TeamPlayersTable, VoteTable)
         }
     }
 
@@ -43,6 +50,7 @@ class ApplicationTest {
             ContentType.Application.Json.withCharset(Charsets.UTF_8).toString(),
             response.contentType()?.toString()
         )
+        // Agora o teste deve passar, pois a DB estará vazia no início
         assertEquals("[]", response.bodyAsText())
     }
 
@@ -55,7 +63,12 @@ class ApplicationTest {
             configureRouting()
         }
 
-        val newUser = User(username = "john", password = "secret123", playerScore = 0.0f, teamScore = 0.0f, numVotes = 0, team = emptyList())
+        val newUser = User(
+            username = "john",
+            password = "secret123",
+            player = Player("john"),
+            team = Team("John's Team", emptyList())
+        )
         val jsonBody = Json.encodeToString(newUser)
 
         val regResponse = client.post("/api/users/register") {
@@ -69,7 +82,7 @@ class ApplicationTest {
 
         val returnedUser = Json.decodeFromString<User>(getResponse.bodyAsText())
         assertEquals("john", returnedUser.username)
-        assertTrue(returnedUser.password.isNotEmpty() && User.verifyPassword("secret123", returnedUser.password))
+        assertTrue(User.verifyPassword("secret123", returnedUser.password))
     }
 
     @Test
@@ -82,7 +95,12 @@ class ApplicationTest {
         }
 
         // register
-        val user = User(username = "alice", password = "passw0rd", playerScore = 0.0f, teamScore = 0.0f, numVotes = 0, team = emptyList())
+        val user = User(
+            username = "alice",
+            password = "passw0rd",
+            player = Player("alice"),
+            team = Team("Alice's Team", emptyList())
+        )
         client.post("/api/users/register") {
             contentType(ContentType.Application.Json)
             setBody(Json.encodeToString(user))
@@ -102,7 +120,8 @@ class ApplicationTest {
             header(HttpHeaders.Cookie, sessionCookie)
         }
         assertEquals(HttpStatusCode.OK, profileResponse.status)
-        assertEquals("Hello, alice. This is your profile.", profileResponse.bodyAsText())
+        assertEquals("alice", profileResponse.bodyAsText())
+
 
         // logout
         val logoutResponse = client.post("/api/users/logout") {
@@ -124,7 +143,12 @@ class ApplicationTest {
             configureRouting()
         }
 
-        val user = User(username = "bob", password = "1234", playerScore = 0.0f, teamScore = 0.0f, numVotes = 0, team = emptyList())
+        val user = User(
+            username = "bob",
+            password = "1234",
+            player = Player("bob"),
+            team = Team("Bob's Team", emptyList())
+        )
         client.post("/api/users/register") {
             contentType(ContentType.Application.Json)
             setBody(Json.encodeToString(user))
